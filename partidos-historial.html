@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+    <title>Historial de Partidos - Padeluminatis</title>
+    <link rel="shortcut icon" href="./imagenes/Logojafs.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Rajdhani:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="./css/app.css" />
+    <link rel="stylesheet" href="./css/shared-utils.css" />
+    <link rel="stylesheet" href="./css/bottom-nav.css" />
+    <style>
+        .history-page-container {
+            padding-bottom: 80px;
+        }
+
+        .history-match-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .history-match-card:hover {
+            background: rgba(var(--primary-rgb), 0.05);
+            border-color: rgba(var(--primary-rgb), 0.2);
+        }
+
+        .hmc-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .hmc-date {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 1px;
+        }
+
+        .hmc-score {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .hmc-right {
+            text-align: right;
+        }
+
+        .badge-win {
+            background: rgba(0, 255, 127, 0.1);
+            color: #00ff7f;
+        }
+
+        .badge-loss {
+            background: rgba(255, 69, 58, 0.1);
+            color: #ff453a;
+        }
+
+        .badge-res {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .header-back {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px 0;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: var(--primary);
+        }
+    </style>
+</head>
+
+<body class="app-body">
+    <div id="particles-js" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></div>
+    <header class="app-header">
+        <div class="header-left">
+            <h1 class="header-title">
+                <span class="title-main">HISTORIAL</span>
+                <span class="title-dot">.</span>
+            </h1>
+        </div>
+    </header>
+
+    <main class="container history-page-container">
+        <div class="header-back">
+            <a href="perfil.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+            <div>
+                <h2 class="section-title-premium m-0">TODOS TUS PARTIDOS</h2>
+                <p class="text-xs opacity-50">Repasa tu trayectoria en Padeluminatis</p>
+            </div>
+        </div>
+
+        <div id="full-history-list" class="mt-3">
+            <div class="loader-ring-container py-5">
+                <div class="loader-ring"></div>
+            </div>
+        </div>
+    </main>
+
+    <nav class="bottom-nav glass">
+        <a href="home.html" class="nav-link">
+            <i class="fas fa-home"></i>
+            <span>Inicio</span>
+        </a>
+        <a href="calendario.html" class="nav-link">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Reserva</span>
+        </a>
+        <a href="puntosRanking.html" class="nav-fab">
+            <i class="fas fa-trophy"></i>
+        </a>
+        <a href="eventos.html" class="nav-link">
+            <i class="fas fa-medal"></i>
+            <span>Eventos</span>
+        </a>
+        <a href="perfil.html" class="nav-link">
+            <i class="fas fa-user"></i>
+            <span>Perfil</span>
+        </a>
+    </nav>
+
+    <script type="module">
+        import { auth, db } from './js/firebase-config.js';
+        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.7.3/firebase-auth.js';
+        import { collection, query, where, getDocs, orderBy } from 'https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js';
+        import { initSharedUI, authGuard } from './js/ui-core.js';
+
+        authGuard();
+        initSharedUI('Historial');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                await loadFullHistory(user.uid);
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        async function loadFullHistory(uid) {
+            const list = document.getElementById('full-history-list');
+            try {
+                let allMatches = [];
+                const cols = ['partidosAmistosos', 'partidosReto'];
+
+                for (const c of cols) {
+                    const snap = await getDocs(query(collection(db, c), where("jugadores", "array-contains", uid), where("estado", "==", "jugado")));
+                    snap.forEach(d => allMatches.push({ id: d.id, ...d.data() }));
+                }
+
+                allMatches.sort((a, b) => (b.fecha?.toDate ? b.fecha.toDate() : new Date(b.fecha)) - (a.fecha?.toDate ? a.fecha.toDate() : new Date(a.fecha)));
+
+                if (allMatches.length === 0) {
+                    list.innerHTML = '<div class="text-center py-5 opacity-50"><i class="fas fa-ghost fa-3x mb-3"></i><p>Aún no has jugado ningún partido.</p></div>';
+                    return;
+                }
+
+                list.innerHTML = '';
+                allMatches.forEach(m => {
+                    const date = m.fecha?.toDate ? m.fecha.toDate() : new Date(m.fecha);
+                    const pos = m.jugadores.indexOf(uid);
+                    const isTeam1 = pos < 2;
+                    let sets1 = 0, sets2 = 0;
+                    if (m.resultado?.sets) {
+                        const p = m.resultado.sets.split('-');
+                        sets1 = parseInt(p[0]); sets2 = parseInt(p[1]);
+                    }
+                    const won = isTeam1 ? (sets1 > sets2) : (sets2 > sets1);
+
+                    const card = document.createElement('div');
+                    card.className = 'history-match-card animate-fade-in';
+                    card.innerHTML = `
+                        <div class="hmc-left">
+                            <span class="hmc-date">${date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}</span>
+                            <span class="hmc-score">${m.resultado?.sets || '0-0'}</span>
+                            <span class="text-2xs opacity-50">${m.tipo?.toUpperCase()}</span>
+                        </div>
+                        <div class="hmc-right">
+                            <span class="badge-res ${won ? 'badge-win' : 'badge-loss'}">${won ? 'Victoria' : 'Derrota'}</span>
+                            <div class="text-2xs mt-1">+${m.puntosGanados || 0} PTS</div>
+                        </div>
+                    `;
+                    list.appendChild(card);
+                });
+            } catch (e) {
+                console.error(e);
+                list.innerHTML = '<p class="text-center text-danger">Error al cargar historial.</p>';
+            }
+        }
+    </script>
+</body>
+
+</html>

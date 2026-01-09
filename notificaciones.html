@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Notificaciones | Padeluminatis</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Rajdhani:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="./css/app.css">
+  <link rel="stylesheet" href="./css/shared-utils.css">
+  <link rel="stylesheet" href="./css/bottom-nav.css">
+  <style>
+    .notifications-container {
+      padding: 10px;
+      padding-bottom: 120px;
+    }
+
+    .notif-item-neon {
+      background: rgba(255, 255, 255, 0.03);
+      /* Lighter glass */
+      backdrop-filter: blur(15px);
+      border-radius: 20px;
+      margin-bottom: 15px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      padding: 15px;
+      gap: 15px;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      /* Subtle border */
+    }
+
+    /* Glow border effect */
+    .notif-item-neon::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 4px;
+      background: transparent;
+      /* Changed default to transparent */
+      transition: background 0.3s ease;
+    }
+
+    .notif-item-neon.unread {
+      background: linear-gradient(90deg, rgba(20, 22, 28, 0.8), rgba(10, 10, 12, 0.9));
+      border: 1px solid rgba(255, 107, 53, 0.3);
+      /* Orange border for unread */
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .notif-item-neon.unread::before {
+      background: var(--primary);
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    .notif-item-neon.read {
+      opacity: 0.7;
+      filter: grayscale(0.5);
+    }
+
+    .notif-item-neon:hover {
+      background: rgba(255, 255, 255, 0.06);
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+      opacity: 1;
+      filter: none;
+    }
+
+    .notif-item-neon:active {
+      transform: scale(0.98);
+    }
+
+    /* Icon Box */
+    .notif-icon-neon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      color: var(--text-muted);
+    }
+
+    .type-match_invite .notif-icon-neon {
+      color: var(--accent);
+      background: rgba(0, 195, 255, 0.08);
+      border-color: rgba(0, 195, 255, 0.2);
+    }
+
+    .type-rank_up .notif-icon-neon {
+      color: #ffd700;
+      background: rgba(255, 215, 0, 0.08);
+      border-color: rgba(255, 215, 0, 0.2);
+    }
+
+    .type-warning .notif-icon-neon {
+      color: var(--danger);
+      background: rgba(255, 71, 87, 0.08);
+      border-color: rgba(255, 71, 87, 0.2);
+    }
+
+    /* Content */
+    .notif-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .notif-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .notif-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .notif-time {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    .notif-msg {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.6);
+      line-height: 1.4;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* Mark All Button - Floating Style */
+    .btn-mark-all-neon {
+      background: rgba(255, 107, 53, 0.1);
+      color: var(--primary);
+      border: 1px solid rgba(255, 107, 53, 0.3);
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: 'Rajdhani';
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-mark-all-neon:hover {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    /* Empty State */
+    .empty-neon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      text-align: center;
+      opacity: 0.6;
+    }
+
+    .empty-neon i {
+      font-size: 3rem;
+      margin-bottom: 15px;
+      color: rgba(255, 255, 255, 0.1);
+    }
+
+    .empty-neon p {
+      font-size: 1rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+  </style>
+</head>
+
+<body class="app-body">
+  <div id="particles-js" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></div>
+
+  <header class="app-header">
+    <div class="header-left">
+      <button id="mark-all-read" class="icon-btn-shared" title="LEER TODO"
+        style="margin-right: 15px; color: var(--primary);">
+        <i class="fas fa-check-double"></i>
+      </button>
+      <button id="clear-all-notifs" class="icon-btn-shared" title="BORRAR TODO"
+        style="margin-right: 15px; color: var(--danger);">
+        <i class="fas fa-trash-alt"></i>
+      </button>
+      <h1 class="header-title">
+        <span class="title-main">NOTIFICACIONES</span>
+        <span class="title-dot">.</span>
+      </h1>
+    </div>
+    <div class="header-right">
+      <a href="notificaciones.html" class="notification-bell active">
+        <i class="fas fa-bell"></i>
+        <span class="notification-dot"></span>
+      </a>
+      <div id="header-avatar-container"></div>
+    </div>
+  </header>
+
+  <main class="container animate-fade-in">
+    <div id="notifications-list" class="notifications-container">
+      <div class="loader-ring-container py-5">
+        <div class="loader-ring"></div>
+      </div>
+    </div>
+  </main>
+
+  <nav class="bottom-nav glass">
+    <a href="home.html" class="nav-link"><i class="fas fa-home"></i><span>Inicio</span></a>
+    <a href="calendario.html" class="nav-link"><i class="fas fa-calendar-alt"></i><span>Reserva</span></a>
+    <a href="puntosRanking.html" class="nav-fab"><i class="fas fa-trophy"></i></a>
+    <a href="eventos.html" class="nav-link"><i class="fas fa-medal"></i><span>Eventos</span></a>
+    <a href="partidos.html" class="nav-link"><i class="fas fa-clipboard-list"></i><span>Partidos</span></a>
+  </nav>
+
+  <script type="module">
+    import { initSharedUI } from './js/ui-core.js';
+    initSharedUI('Notificaciones');
+  </script>
+
+  <script type="module">
+    // Inline JS for immediate guaranteed execution and styling match
+    import { db, auth } from './js/firebase-config.js';
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.7.3/firebase-auth.js';
+    import {
+      collection, query, where, onSnapshot,
+      doc, updateDoc, writeBatch, getDocs, deleteDoc
+    } from 'https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js';
+
+    const list = document.getElementById('notifications-list');
+    const markAllBtn = document.getElementById('mark-all-read');
+    const clearAllBtn = document.getElementById('clear-all-notifs');
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) setupNotifications(user.uid);
+      else location.href = 'index.html';
+    });
+
+    function setupNotifications(uid) {
+      try {
+        const q = query(
+          collection(db, "notificaciones"),
+          where("uid", "==", uid)
+        );
+
+        onSnapshot(q, (snapshot) => {
+          list.innerHTML = "";
+
+          if (snapshot.empty) {
+            list.innerHTML = `
+                        <div class="empty-neon animate-fade-in">
+                            <i class="far fa-bell-slash"></i>
+                            <p>Todo está tranquilo por aquí</p>
+                        </div>`;
+            return;
+          }
+
+          let notifs = [];
+          snapshot.forEach(docSnap => {
+            notifs.push({ id: docSnap.id, ...docSnap.data() });
+          });
+
+          // Client-side Sort Descending
+          notifs.sort((a, b) => {
+            const da = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+            const db = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+            return db - da;
+          });
+
+          notifs.forEach(notif => {
+            const el = createNotifElement(notif);
+            list.appendChild(el);
+          });
+        }, (error) => {
+          console.error("Sync Error", error);
+          list.innerHTML = '<div class="pad-lg text-center opacity-50">Error de sincronización</div>';
+        });
+      } catch (error) {
+        console.error("Setup Error", error);
+      }
+
+      markAllBtn.onclick = async () => {
+        try {
+          const batch = writeBatch(db);
+          const unreadSnap = await getDocs(query(collection(db, "notificaciones"), where("uid", "==", uid), where("read", "==", false)));
+          unreadSnap.forEach(d => batch.update(d.ref, { read: true }));
+          await batch.commit();
+        } catch (e) { console.error(e); }
+      };
+
+      clearAllBtn.onclick = async () => {
+        if (!confirm('¿BORRAR TODAS LAS NOTIFICACIONES?')) return;
+        try {
+          const batch = writeBatch(db);
+          const allSnap = await getDocs(query(collection(db, "notificaciones"), where("uid", "==", uid)));
+          allSnap.forEach(d => batch.delete(d.ref));
+          await batch.commit();
+        } catch (e) { console.error(e); }
+      };
+    }
+
+    function createNotifElement(notif) {
+      const div = document.createElement('div');
+      div.className = `notif-item-neon ${notif.read ? 'read' : 'unread'} type-${notif.type || 'info'} animate-fade-in`;
+
+      const date = notif.createdAt?.toDate ? notif.createdAt.toDate() : new Date();
+      const iconInfo = getIconInfo(notif.type);
+
+      div.innerHTML = `
+            <div class="notif-icon-neon">
+                ${iconInfo}
+            </div>
+            <div class="notif-content">
+                <div class="notif-top">
+                    <span class="notif-title">${notif.title}</span>
+                    <span class="notif-time">${timeAgo(date)}</span>
+                </div>
+                <div class="notif-msg">${notif.message}</div>
+            </div>
+            <div class="notif-actions" style="display:flex; align-items:center; padding-left:10px;">
+                <button class="delete-notif-btn" 
+                        style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.1rem; padding:10px;"
+                        onclick="event.stopPropagation(); window.deleteNotification('${notif.id}')">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        `;
+
+      div.onclick = async () => {
+        if (!notif.read) {
+          try { await updateDoc(doc(db, "notificaciones", notif.id), { read: true }); } catch (e) { }
+        }
+        if (notif.link) {
+          window.location.href = notif.link;
+        }
+      };
+
+      return div;
+    }
+
+    window.deleteNotification = async (id) => {
+      try {
+        await deleteDoc(doc(db, "notificaciones", id));
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    function getIconInfo(type) {
+      switch (type) {
+        case 'match_invite': return '<i class="fas fa-envelope-open-text"></i>';
+        case 'match_today': return '<i class="fas fa-calendar-day" style="color:#00e676"></i>';
+        case 'rank_up': return '<i class="fas fa-trophy"></i>';
+        case 'success': return '<i class="fas fa-check"></i>';
+        case 'warning': return '<i class="fas fa-exclamation"></i>';
+        default: return '<i class="far fa-bell"></i>';
+      }
+    }
+
+    function timeAgo(date) {
+      const seconds = Math.floor((new Date() - date) / 1000);
+      if (seconds < 60) return 'ahora';
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return minutes + 'm';
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return hours + 'h';
+      const days = Math.floor(hours / 24);
+      return days + 'd';
+    }
+  </script>
+</body>
+
+</html>

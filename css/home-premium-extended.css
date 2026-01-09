@@ -1,0 +1,403 @@
+/* HOME PREMIUM EXTENDED - Enhanced Aesthetics */
+
+.welcome-section {
+  background: linear-gradient(
+    135deg,
+    rgba(var(--primary-rgb), 0.15) 0%,
+    rgba(5, 6, 8, 0.4) 100%
+  ) !important;
+  border: 1px solid rgba(var(--primary-rgb), 0.25) !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.welcome-section::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.05) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+  animation: welcomePulse 10s linear infinite;
+}
+
+@keyframes welcomePulse {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.greeting-text {
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  font-weight: 800;
+  color: var(--primary);
+  opacity: 0.9;
+}
+
+.user-name-display {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 2.4rem !important;
+  letter-spacing: 1px;
+}
+
+.micro-stats-bar {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-md);
+  margin-top: 1.5rem;
+  display: flex;
+  padding: 12px;
+  justify-content: space-around;
+  backdrop-filter: blur(10px);
+}
+
+/* --- Next Match Card Premium --- */
+.next-match-card-premium {
+  background: linear-gradient(145deg, rgba(20, 24, 33, 0.98), rgba(5, 6, 8, 1));
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.5rem;
+  position: relative;
+  transition: var(--transition);
+  cursor: pointer;
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.6);
+  border-left: 4px solid var(--primary);
+}
+
+.next-match-card-premium:hover {
+  transform: translateY(-5px);
+  border-color: var(--primary);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+}
+
+.nm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.nm-live {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #fff;
+  background: var(--danger);
+  padding: 3px 10px;
+  border-radius: 50px;
+  letter-spacing: 1.5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.nm-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.nm-date-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.nm-day {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.nm-hour {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #fff;
+  font-family: "Rajdhani", sans-serif;
+  line-height: 1;
+  margin-top: 4px;
+}
+
+.nm-vs-info {
+  text-align: right;
+}
+
+.nm-players-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.btn-view-match {
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  justify-content: flex-end;
+}
+
+/* Empty State Styling */
+.empty-next-match,
+.empty-state-matches {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.empty-next-match p,
+.empty-state-matches p {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.toggle-container-premium {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  gap: 4px;
+}
+
+.toggle-btn-premium {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.toggle-btn-premium.active {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+.pmc-status .status-badge.open {
+  color: var(--accent);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  background: rgba(var(--accent-rgb), 0.05);
+}
+.pmc-status .status-badge.closed {
+  color: var(--warning);
+  border: 1px solid rgba(255, 234, 0, 0.3);
+  background: rgba(255, 234, 0, 0.05);
+}
+.pmc-status .status-badge.played {
+  color: var(--success);
+  border: 1px solid rgba(0, 230, 118, 0.3);
+  background: rgba(0, 230, 118, 0.05);
+}
+
+/* --- Pending Matches List Premium --- */
+.pending-match-card-premium {
+  display: flex;
+  align-items: center;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  transition: var(--transition);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.pending-match-card-premium:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--primary);
+  transform: translateX(5px);
+}
+
+.pmc-left {
+  border-right: 1px solid var(--border);
+  padding-right: 1rem;
+  margin-right: 1rem;
+  text-align: center;
+  min-width: 65px;
+}
+
+.pmc-date {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
+
+.pmc-hour {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+  font-family: "Rajdhani", sans-serif;
+  line-height: 1;
+  margin-top: 5px;
+}
+
+.pmc-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pmc-type-badge {
+  font-size: 0.55rem;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  width: fit-content;
+  text-transform: uppercase;
+}
+
+.pmc-type-badge.amistoso {
+  background: rgba(0, 230, 118, 0.1);
+  color: var(--success);
+}
+.pmc-type-badge.reto {
+  background: rgba(255, 107, 53, 0.1);
+  color: var(--primary);
+}
+
+.pmc-players {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pmc-players i {
+  font-size: 0.7rem;
+  opacity: 0.5;
+}
+
+.pmc-restriction {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pmc-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.pmc-joined-tag {
+  color: var(--success);
+  font-size: 1rem;
+}
+
+/* User Selector Premium Styles */
+.user-selection-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.user-selection-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(var(--primary-rgb), 0.3);
+  transform: translateX(3px);
+}
+
+.user-info-pro {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name-pro {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #fff;
+}
+
+.user-stats-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.stat-pill {
+  font-size: 0.6rem;
+  font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+}
+
+.user-avatar-pro {
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+
+/* --- See More Button --- */
+.btn-see-more-premium {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px;
+  background: rgba(255, 107, 53, 0.1);
+  border: 1px dashed var(--primary);
+  border-radius: var(--radius-md);
+  color: var(--primary);
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.btn-see-more-premium:hover {
+  background: var(--primary);
+  color: #fff;
+  border-style: solid;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
+}

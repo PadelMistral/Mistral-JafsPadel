@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Reservas - Padeluminatis</title>
+    <link rel="icon" type="image/x-icon" href="./imagenes/Logojafs.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Rajdhani:wght@600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="./css/app.css">
+    <link rel="stylesheet" href="./css/shared-utils.css">
+    <link rel="stylesheet" href="./css/bottom-nav.css">
+    <link rel="stylesheet" href="./css/calendario-premium.css">
+    <style>
+        /* Layout Fixes for Full Height */
+        body {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 100dvh;
+        }
+
+        .app-header {
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+        .bottom-nav {
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 10px 10px 0 10px;
+            overflow: hidden;
+            /* Prevent body scroll */
+        }
+
+        .calendar-header-premium {
+            flex-shrink: 0;
+        }
+
+        .calendar-main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin-top: 5px;
+            min-height: 0;
+            /* Crucial for nested flex scrolling */
+        }
+
+        #semanas-calendario {
+            flex: 1;
+            overflow-y: auto;
+            /* Scroll if vertical content exceeds */
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        /* Grid table tweak */
+        .tabla-semana {
+            width: 100%;
+            height: 100%;
+            /* Fill available space */
+            border-collapse: separate;
+            border-spacing: 2px;
+        }
+    </style>
+</head>
+
+<body class="app-body">
+    <div id="particles-js" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></div>
+
+    <header class="app-header">
+        <div class="header-left">
+            <h1 class="header-title">
+                <span class="title-main">RESERVAS</span>
+                <span class="title-dot">.</span>
+            </h1>
+        </div>
+        <div class="header-right">
+            <a href="notificaciones.html" class="notification-bell">
+                <i class="fas fa-bell"></i>
+                <span class="notification-dot"></span>
+            </a>
+            <div id="header-avatar-container"></div>
+        </div>
+    </header>
+
+    <main class="container animate-fade-in">
+        <!-- Controls -->
+        <div class="flex-between mb-1">
+            <div class="calendar-header-premium flex-1">
+                <div class="calendario-controls glass-strong"
+                    style="padding: 6px 16px; height: 52px; display: flex; align-items: center; justify-content: space-between;">
+                    <div class="header-clock-box"
+                        style="display: flex; flex-direction: column; align-items: flex-start;">
+                        <span id="current-time-display"
+                            style="font-family: 'Rajdhani'; font-weight: 800; font-size: 1.1rem; color: var(--primary); line-height: 1;">00:00:00</span>
+                        <span id="current-date-display"
+                            style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">HOY</span>
+                    </div>
+
+                    <div class="week-selector-info"
+                        style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; gap: 12px;">
+                        <button id="btn-semana-anterior" class="btn-nav"
+                            style="width: 30px; height: 30px; border-radius: 8px;"><i
+                                class="fas fa-chevron-left"></i></button>
+                        <div>
+                            <h2 id="rango-semana" class="week-label" style="font-size: 0.85rem; margin:0;">...</h2>
+                            <span id="mes-actual" class="month-label"
+                                style="font-size: 0.6rem; display: block; margin-top: -2px;">...</span>
+                        </div>
+                        <button id="btn-semana-siguiente" class="btn-nav"
+                            style="width: 30px; height: 30px; border-radius: 8px;"><i
+                                class="fas fa-chevron-right"></i></button>
+                    </div>
+
+                    <div class="location-box text-right"
+                        style="display: flex; flex-direction: column; align-items: flex-end;">
+                        <span
+                            style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; letter-spacing: 1px;"><i
+                                class="fas fa-location-dot"></i> BENICALAP</span>
+                        <span style="font-size: 0.55rem; color: var(--accent); font-weight: 700;">VALENCIA</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar Grid -->
+        <div class="calendar-main-container" id="vista-tabla">
+            <div id="semanas-calendario" class="calendar-grid">
+                <!-- Data injected by js -->
+            </div>
+
+            <div id="calendar-global-loader" class="loader-overlay" style="display: none;">
+                <div class="loader-ring"></div>
+            </div>
+
+            <!-- Better Legend at bottom -->
+            <div class="calendar-legend-pro glass-strong mt-1 p-2"
+                style="border-radius: 14px; background: rgba(0,0,0,0.25); flex-shrink: 0;">
+                <div class="flex-between px-2">
+                    <div class="legend-item-pro">
+                        <span class="legend-dot libre"></span>
+                        <div class="legend-label">
+                            <span class="l-title">LIBRE</span>
+                        </div>
+                    </div>
+                    <div class="legend-item-pro">
+                        <span class="legend-dot abierta"></span>
+                        <div class="legend-label">
+                            <span class="l-title">ABIERTA</span>
+                        </div>
+                    </div>
+                    <div class="legend-item-pro">
+                        <span class="legend-dot reservado"></span>
+                        <div class="legend-label">
+                            <span class="l-title">CERRADA</span>
+                        </div>
+                    </div>
+                    <div class="legend-item-pro">
+                        <span class="legend-dot mi-partida"></span>
+                        <div class="legend-label">
+                            <span class="l-title">PROPIA</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calendar-bottom-info glass-strong mt-1" style="flex-shrink: 0;">
+                <div class="info-item">
+                    <i class="fas fa-info-circle text-primary"></i>
+                    <span style="font-size: 0.65rem;">Toca para reservar</span>
+                </div>
+                <div class="divider-v"></div>
+                <div id="weather-summary-bottom" class="info-item">
+                    <i class="fas fa-cloud-sun text-accent"></i>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Unified Modal -->
+    <div id="modal-partido-universal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modal-titulo" class="modal-title">DETALLES DEL TURNO</h3>
+                <button class="close-btn" id="btn-cerrar-modal">&times;</button>
+            </div>
+            <div id="modal-cuerpo" class="modal-body">
+                <!-- Content generated via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav glass">
+        <a href="home.html" class="nav-link">
+            <i class="fas fa-home"></i>
+            <span>Inicio</span>
+        </a>
+        <a href="calendario.html" class="nav-link active">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Reserva</span>
+        </a>
+        <a href="puntosRanking.html" class="nav-fab">
+            <i class="fas fa-trophy"></i>
+        </a>
+        <a href="eventos.html" class="nav-link">
+            <i class="fas fa-medal"></i>
+            <span>Eventos</span>
+        </a>
+        <a href="partidos.html" class="nav-link">
+            <i class="fas fa-clipboard-list"></i>
+            <span>Partidos</span>
+        </a>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script type="module" src="./js/particles-init.js"></script>
+    <script type="module">
+        import { initSharedUI } from './js/ui-core.js';
+        initSharedUI('Reservas');
+    </script>
+
+    <!-- Selector Overlay -->
+    <div id="user-selector-overlay" class="selector-overlay">
+        <div class="selector-header">
+            <h3 class="modal-title" style="color:#ff6b35"><i class="fas fa-users-viewfinder me-2"></i>ELEGIR JUGADOR
+            </h3>
+            <button class="close-btn" onclick="closeSelector()">&times;</button>
+        </div>
+
+        <div class="selector-search-box">
+            <input type="text" id="selector-search" class="selector-search-input" placeholder="Buscar por nombre..."
+                oninput="handleSelectorSearch(this.value)">
+        </div>
+
+        <div id="selector-results" class="selector-results">
+            <!-- Filled by JS -->
+        </div>
+    </div>
+
+    <script type="module" src="./js/calendario.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Perfil Pro | Padeluminatis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Rajdhani:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="./css/app.css">
+    <link rel="stylesheet" href="./css/shared-utils.css">
+    <link rel="stylesheet" href="./css/bottom-nav.css">
+    <style>
+        :root {
+            --profile-glow: rgba(255, 107, 53, 0.3);
+        }
+
+        .profile-hero {
+            padding: 3.5rem 1.5rem 2rem;
+            text-align: center;
+            background: radial-gradient(circle at top, rgba(255, 107, 53, 0.1) 0%, transparent 70%);
+            position: relative;
+        }
+
+        .avatar-wrap-pro {
+            position: relative;
+            width: 130px;
+            height: 130px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .avatar-main {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid var(--primary);
+            box-shadow: 0 0 30px var(--profile-glow);
+            background: #0d0e12;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .avatar-main img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .edit-badge {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 38px;
+            height: 38px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border: 4px solid #050608;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            transition: 0.3s;
+        }
+
+        .edit-badge:hover {
+            transform: scale(1.1);
+        }
+
+        .profile-name {
+            font-family: 'Rajdhani';
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 0.3rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .role-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 14px;
+            background: rgba(255, 107, 53, 0.1);
+            border: 1px solid rgba(255, 107, 53, 0.2);
+            border-radius: 20px;
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Stats Dashboard */
+        .stats-dashboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 2rem;
+            padding: 0 10px;
+        }
+
+        .stat-card-neon {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 18px;
+            padding: 15px 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: 0.3s;
+        }
+
+        .stat-card-neon span:first-child {
+            display: block;
+            font-family: 'Rajdhani';
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 2px;
+        }
+
+        .stat-card-neon span:last-child {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            font-weight: 800;
+            opacity: 0.4;
+            letter-spacing: 1px;
+        }
+
+        /* Settings Rows */
+        .settings-container {
+            padding: 0 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .setting-group-title {
+            font-family: 'Rajdhani';
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 2.5rem 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+        }
+
+        .item-neo {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 12px;
+            transition: 0.3s;
+        }
+
+        .item-neo:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .item-neo i {
+            font-size: 1.2rem;
+            opacity: 0.4;
+            width: 25px;
+            text-align: center;
+        }
+
+        .item-neo-content {
+            flex: 1;
+        }
+
+        .item-neo-label {
+            display: block;
+            font-size: 0.65rem;
+            font-weight: 800;
+            opacity: 0.4;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .item-neo-val {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #eee;
+        }
+
+        .form-input-neo {
+            background: transparent;
+            border: none;
+            color: #fff;
+            width: 100%;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            outline: none;
+        }
+
+        /* Location Grid */
+        .location-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .location-box {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            text-align: center;
+        }
+
+        .location-box select {
+            background: transparent;
+            border: none;
+            color: #fff;
+            width: 100%;
+            text-align: center;
+            font-weight: 800;
+            font-family: 'Rajdhani';
+            font-size: 1.1rem;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .location-box select option {
+            background: #1a1e26;
+            color: #fff;
+        }
+
+        .btn-modern {
+            width: 100%;
+            padding: 16px;
+            border-radius: 18px;
+            border: none;
+            font-family: 'Rajdhani';
+            font-weight: 800;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-primary-neo {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 5px 20px var(--profile-glow);
+        }
+
+        .btn-danger-neo {
+            background: rgba(255, 59, 48, 0.1);
+            color: #ff3b30;
+            border: 1px solid rgba(255, 59, 48, 0.2);
+            margin-top: 2rem;
+        }
+
+        .btn-danger-neo:hover {
+            background: #ff3b30;
+            color: #fff;
+        }
+
+        #history-mini-btn {
+            background: rgba(0, 195, 255, 0.1);
+            color: #00c3ff;
+            border: 1px solid rgba(0, 195, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+
+<body class="app-body">
+    <div id="particles-js" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></div>
+
+    <header class="app-header">
+        <div class="header-left">
+            <h1 class="header-title">
+                <span class="title-main">PERFIL</span>
+                <span class="title-dot">.</span>
+            </h1>
+        </div>
+        <div class="header-right">
+            <a href="notificaciones.html" class="notification-bell">
+                <i class="fas fa-bell"></i>
+                <span class="notification-dot"></span>
+            </a>
+            <div id="header-avatar-container"></div>
+        </div>
+    </header>
+
+    <main class="container" style="padding: 0; padding-bottom: 120px;">
+
+        <div class="profile-hero">
+            <div class="avatar-wrap-pro">
+                <div class="avatar-main" id="p-avatar-main">
+                    <div class="spinner-small"></div>
+                </div>
+                <div class="edit-badge" id="btn-edit-photo">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <input type="file" id="photo-upload" accept="image/*" style="display: none;">
+            </div>
+
+            <h1 class="profile-name" id="p-display-name">---</h1>
+            <div class="role-tag">
+                <i class="fas fa-shield-halved"></i>
+                <span id="p-display-role">Cargando...</span>
+            </div>
+
+            <div class="stats-dashboard">
+                <div class="stat-card-neon">
+                    <span id="p-val-lvl">--</span>
+                    <span>Nivel</span>
+                </div>
+                <div class="stat-card-neon">
+                    <span id="p-val-pts">--</span>
+                    <span>Puntos</span>
+                </div>
+                <div class="stat-card-neon">
+                    <span id="p-val-wr">--%</span>
+                    <span>Win Rate</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-container">
+
+            <div class="setting-group-title">
+                <i class="fas fa-chart-line"></i> Estadísticas Avanzadas
+            </div>
+
+            <div class="item-neo">
+                <i class="fas fa-bullseye text-success"></i>
+                <div class="item-neo-content">
+                    <span class="item-neo-label">VÍCTIMA FAVORITA</span>
+                    <span class="item-neo-val" id="p-adv-victim">---</span>
+                </div>
+            </div>
+
+            <div class="item-neo">
+                <i class="fas fa-skull text-danger"></i>
+                <div class="item-neo-content">
+                    <span class="item-neo-label">NÉMESIS PRINCIPAL</span>
+                    <span class="item-neo-val" id="p-adv-nemesis">---</span>
+                </div>
+            </div>
+
+            <div class="item-neo">
+                <i class="fas fa-handshake text-info"></i>
+                <div class="item-neo-content">
+                    <span class="item-neo-label">MEJOR COMPAÑERO</span>
+                    <span class="item-neo-val" id="p-adv-partner">---</span>
+                </div>
+            </div>
+
+            <div class="setting-group-title">
+                <i class="fas fa-user-circle"></i> Datos del Usuario
+            </div>
+
+            <div class="item-neo">
+                <i class="fas fa-id-card"></i>
+                <div class="item-neo-content">
+                    <span class="item-neo-label">Nombre del Jugador</span>
+                    <input type="text" id="input-edit-name" class="form-input-neo" placeholder="Tu nombre...">
+                </div>
+                <button id="btn-save-name" class="btn-icon" style="color:var(--primary)"><i
+                        class="fas fa-save"></i></button>
+            </div>
+
+            <div class="item-neo">
+                <i class="fas fa-location-arrow"></i>
+                <div class="item-neo-content">
+                    <span class="item-neo-label">Posición Favorita</span>
+                    <select id="p-sel-posicion" class="form-input-neo"
+                        style="background:transparent; border:none; color:#fff; cursor:pointer;">
+                        <option value="Derecha">DERECHA</option>
+                        <option value="Revés">REVÉS</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="item-neo">
+                <i class="fas fa-envelope"></i>
+                <div class="item-neo-content">
+                    <span class="item-neo-label">Email Registrado</span>
+                    <span class="item-neo-val" id="p-val-email">---</span>
+                </div>
+            </div>
+
+            <div class="setting-group-title">
+                <i class="fas fa-location-dot"></i> Ubicación Benicalap
+            </div>
+
+            <div class="location-grid">
+                <div class="location-box">
+                    <span class="item-neo-label">BLOQUE</span>
+                    <select id="p-sel-bloque">
+                        <option value="">A --</option>
+                        <option value="A1">A1</option>
+                        <option value="A2">A2</option>
+                        <option value="A3">A3</option>
+                        <option value="A4">A4</option>
+                        <option value="A5">A5</option>
+                        <option value="A6">A6</option>
+                    </select>
+                </div>
+                <div class="location-box">
+                    <span class="item-neo-label">PISO</span>
+                    <select id="p-sel-piso">
+                        <option value="">--</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                    </select>
+                </div>
+                <div class="location-box">
+                    <span class="item-neo-label">PUERTA</span>
+                    <select id="p-sel-puerta">
+                        <option value="">-</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                        <option value="E">E</option>
+                        <option value="F">F</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn-modern btn-primary-neo" id="btn-save-addr">
+                Guardar Dirección <i class="fas fa-check-circle ms-2"></i>
+            </button>
+
+            <button class="btn-modern" id="history-mini-btn" onclick="window.location.href='partidos.html'">
+                <i class="fas fa-history"></i> Ver Historial Completo
+            </button>
+
+            <button class="btn-modern btn-danger-neo" id="btn-logout-pro">
+                Cerrar Sesión Activa <i class="fas fa-power-off ms-2"></i>
+            </button>
+
+        </div>
+    </main>
+
+    <nav class="bottom-nav glass">
+        <a href="home.html" class="nav-link"><i class="fas fa-home"></i><span>Inicio</span></a>
+        <a href="calendario.html" class="nav-link"><i class="fas fa-calendar-alt"></i><span>Reserva</span></a>
+        <a href="puntosRanking.html" class="nav-fab"><i class="fas fa-trophy"></i></a>
+        <a href="eventos.html" class="nav-link"><i class="fas fa-medal"></i><span>Eventos</span></a>
+        <a href="perfil.html" class="nav-link active"><i class="fas fa-user-astronaut"></i><span>Perfil</span></a>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script type="module" src="./js/particles-init.js"></script>
+    <script type="module">
+        import { auth, db, storage } from './js/firebase-config.js';
+        import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.7.3/firebase-auth.js';
+        import { doc, getDoc, getDocs, updateDoc, collection, query, where } from 'https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js';
+        import { ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/11.7.3/firebase-storage.js';
+        import { authGuard, initSharedUI } from './js/ui-core.js';
+
+        authGuard();
+        initSharedUI('Perfil');
+
+        let userUid = null;
+        let allUsers = {};
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userUid = user.uid;
+                await loadAllUsers();
+                await loadCoreProfile();
+                await calcAdvancedStats();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        async function loadAllUsers() {
+            const snap = await getDocs(collection(db, 'usuarios'));
+            snap.forEach(d => allUsers[d.id] = { ...d.data(), id: d.id });
+        }
+
+        async function loadCoreProfile() {
+            const snap = await getDoc(doc(db, 'usuarios', userUid));
+            if (!snap.exists()) return;
+            const u = snap.data();
+
+            document.getElementById('p-display-name').textContent = u.nombreUsuario || u.nombre || 'Sin nombre';
+            document.getElementById('input-edit-name').value = u.nombreUsuario || u.nombre || '';
+            document.getElementById('p-display-role').textContent = u.rol || 'JUGADOR';
+            document.getElementById('p-val-lvl').textContent = (u.nivel || 2.0).toFixed(2);
+            document.getElementById('p-val-pts').textContent = Math.round(u.puntosRankingTotal || u.puntosRanking || 0);
+            document.getElementById('p-val-email').textContent = u.email || '---';
+
+            if (u.direccion) {
+                document.getElementById('p-sel-bloque').value = u.direccion.bloque || '';
+                document.getElementById('p-sel-piso').value = u.direccion.piso || '';
+                document.getElementById('p-sel-puerta').value = u.direccion.puerta || '';
+            }
+            if (u.posicion) {
+                document.getElementById('p-sel-posicion').value = u.posicion;
+            }
+
+            const avatarEl = document.getElementById('p-avatar-main');
+            if (avatarEl) avatarEl.innerHTML = renderAvatarShared(userUid, u, 'lg');
+        }
+
+        async function calcAdvancedStats() {
+            const cols = ['partidosAmistosos', 'partidosReto'];
+            let matches = [];
+            for (const c of cols) {
+                const q = query(collection(db, c), where("jugadores", "array-contains", userUid), where("estado", "==", "jugado"));
+                const snap = await getDocs(q);
+                snap.forEach(d => matches.push(d.data()));
+            }
+
+            if (matches.length === 0) return;
+
+            let wins = 0;
+            let rivalStats = {};
+            let partnerStats = {};
+
+            matches.forEach(m => {
+                const myPos = m.jugadores.indexOf(userUid);
+                const isT1 = myPos < 2;
+                const scores = (m.resultado?.sets || "0-0").split(' ')[0].split('-').map(Number);
+                const iWon = (isT1 && scores[0] > scores[1]) || (!isT1 && scores[1] > scores[0]);
+
+                if (iWon) wins++;
+
+                // Rivals
+                const rids = isT1 ? [m.jugadores[2], m.jugadores[3]] : [m.jugadores[0], m.jugadores[1]];
+                rids.forEach(rid => {
+                    if (!rid || rid.startsWith('GUEST')) return;
+                    if (!rivalStats[rid]) rivalStats[rid] = { w: 0, l: 0 };
+                    iWon ? rivalStats[rid].w++ : rivalStats[rid].l++;
+                });
+
+                // Partner
+                const pid = isT1 ? (myPos === 0 ? m.jugadores[1] : m.jugadores[0]) : (myPos === 2 ? m.jugadores[3] : m.jugadores[2]);
+                if (pid && !pid.startsWith('GUEST')) {
+                    if (!partnerStats[pid]) partnerStats[pid] = { w: 0, l: 0 };
+                    iWon ? partnerStats[pid].w++ : partnerStats[pid].l++;
+                }
+            });
+
+            document.getElementById('p-val-wr').textContent = (wins / matches.length * 100).toFixed(1) + '%';
+
+            // Find bests
+            const findTop = (stats, key) => {
+                let max = -1, bestId = null;
+                for (let id in stats) {
+                    if (stats[id][key] > max) { max = stats[id][key]; bestId = id; }
+                }
+                return bestId ? `${allUsers[bestId]?.nombreUsuario || 'Jugador'} (${max})` : '---';
+            };
+
+            document.getElementById('p-adv-victim').textContent = findTop(rivalStats, 'w');
+            document.getElementById('p-adv-nemesis').textContent = findTop(rivalStats, 'l');
+            document.getElementById('p-adv-partner').textContent = findTop(partnerStats, 'w');
+        }
+
+        function renderAvatar(u) {
+            const el = document.getElementById('p-avatar-main');
+            const url = u.fotoPerfil || u.fotoURL;
+            if (url) {
+                el.innerHTML = `<img src="${url}">`;
+            } else {
+                const initials = (u.nombreUsuario || u.nombre || '?').substring(0, 2).toUpperCase();
+                el.innerHTML = `<span style="font-family:'Rajdhani'; font-weight:800; font-size:2.8rem; color:var(--primary)">${initials}</span>`;
+            }
+        }
+
+        // --- ACTIONS ---
+        document.getElementById('btn-save-name').onclick = async () => {
+            const n = document.getElementById('input-edit-name').value.trim();
+            const pos = document.getElementById('p-sel-posicion').value;
+            if (!n) return;
+            await updateDoc(doc(db, 'usuarios', userUid), {
+                nombreUsuario: n,
+                posicion: pos
+            });
+            alert('Perfil actualizado con éxito');
+            location.reload();
+        };
+
+        document.getElementById('btn-save-addr').onclick = async () => {
+            const addr = {
+                bloque: document.getElementById('p-sel-bloque').value,
+                piso: document.getElementById('p-sel-piso').value,
+                puerta: document.getElementById('p-sel-puerta').value
+            };
+            await updateDoc(doc(db, 'usuarios', userUid), { direccion: addr });
+            alert('Ubicación guardada correctamente');
+        };
+
+        document.getElementById('btn-logout-pro').onclick = async () => {
+            if (confirm('¿Seguro que quieres cerrar sesión?')) {
+                await signOut(auth);
+                window.location.href = 'index.html';
+            }
+        };
+
+        document.getElementById('btn-edit-photo').onclick = () => document.getElementById('photo-upload').click();
+
+        document.getElementById('photo-upload').onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const container = document.getElementById('p-avatar-main');
+            container.innerHTML = '<div class="spinner-small"></div>';
+
+            const sRef = ref(storage, `profiles/${userUid}/${Date.now()}.jpg`);
+            await uploadBytes(sRef, file);
+            const url = await getDownloadURL(sRef);
+            await updateDoc(doc(db, 'usuarios', userUid), { fotoPerfil: url, fotoURL: url });
+            location.reload();
+        };
+
+    </script>
+</body>
+
+</html>

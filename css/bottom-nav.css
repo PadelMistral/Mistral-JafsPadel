@@ -1,0 +1,184 @@
+/* ============================================
+   BOTTOM NAVIGATION - Premium Edition
+   ============================================ */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(8, 10, 15, 0.98);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-bright);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px 0;
+  z-index: 1000;
+  padding-bottom: env(safe-area-inset-bottom, 10px);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.nav-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 64px;
+  position: relative;
+  text-decoration: none;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.nav-link i {
+  font-size: 22px;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Hover Effect */
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  transform: translateY(-2px);
+}
+
+.nav-link:hover i {
+  transform: scale(1.1);
+}
+
+/* Active State */
+.nav-link.active {
+  color: var(--primary);
+  background: rgba(255, 107, 53, 0.1);
+}
+
+.nav-link.active i {
+  transform: translateY(-3px) scale(1.05);
+  filter: drop-shadow(0 4px 8px var(--primary-glow));
+}
+
+.nav-link.active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  border-radius: 0 0 3px 3px;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* FAB Button (Trophy) */
+.nav-fab {
+  width: 58px;
+  height: 58px;
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--primary-dark) 100%
+  );
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 26px;
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.5), 0 0 0 4px var(--bg-body),
+    0 0 0 6px rgba(255, 107, 53, 0.2);
+  transform: translateY(-24px);
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  position: relative;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.nav-fab::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: -1;
+}
+
+.nav-fab:hover {
+  transform: translateY(-28px) scale(1.05);
+  box-shadow: 0 8px 30px rgba(255, 107, 53, 0.6), 0 0 0 4px var(--bg-body),
+    0 0 0 6px rgba(255, 107, 53, 0.3);
+}
+
+.nav-fab:hover::before {
+  opacity: 0.3;
+  animation: pulse 2s infinite;
+}
+
+.nav-fab.active {
+  background: linear-gradient(
+    135deg,
+    var(--accent) 0%,
+    var(--accent-dark) 100%
+  );
+  box-shadow: 0 6px 20px rgba(0, 212, 255, 0.5), 0 0 0 4px var(--bg-body),
+    0 0 0 6px rgba(0, 212, 255, 0.2);
+}
+
+.nav-fab:active {
+  transform: translateY(-22px) scale(0.95);
+}
+
+/* Ripple Effect on Click */
+.nav-link:active,
+.nav-fab:active {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 480px) {
+  .nav-link {
+    width: 56px;
+    font-size: 9px;
+    padding: 6px 8px;
+  }
+
+  .nav-link i {
+    font-size: 20px;
+  }
+
+  .nav-fab {
+    width: 54px;
+    height: 54px;
+    font-size: 24px;
+  }
+}
+
+/* Safe Area for Notch Devices */
+@supports (padding: max(0px)) {
+  .bottom-nav {
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+}
