@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Padeluminatis - Inicio</title>
+    <link rel="shortcut icon" href="./imagenes/Logojafs.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./css/app.css">
+    <link rel="stylesheet" href="./css/home-neo.css">
+</head>
+
+<body class="app-body neo-body">
+    <!-- Header Flotante -->
+    <header class="neo-header">
+        <div class="neo-header-content">
+            <div class="neo-header-left">
+                <div class="neo-logo-container">
+                    <div class="neo-logo-icon">
+                        <img src="./imagenes/Logojafs.png" alt="Logo" class="neo-logo-img">
+                        <div class="neo-logo-glow"></div>
+                    </div>
+                    <h1 class="neo-header-title">
+                        <span class="neo-title-main">PADELUMINATIS</span>
+                        <span class="neo-title-sub">NEXUS</span>
+                    </h1>
+                </div>
+            </div>
+            
+            <div class="neo-header-right">
+                <a href="notificaciones.html" class="neo-icon-btn neo-notification-btn">
+                    <i class="fas fa-bell"></i>
+                    <span class="neo-notification-badge" id="notification-count">0</span>
+                </a>
+                <a href="perfil.html" class="neo-avatar-btn" id="header-avatar">
+                    <div class="neo-avatar-pulse"></div>
+                </a>
+            </div>
+        </div>
+        
+        <div class="neo-header-progress">
+            <div class="neo-progress-bar" id="header-progress">
+                <div class="neo-progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="neo-main-content">
+        <!-- Sección de Bienvenida -->
+        <section class="neo-hero-section">
+            <div class="neo-hero-background">
+                <div class="neo-hero-glow neo-glow-1"></div>
+                <div class="neo-hero-glow neo-glow-2"></div>
+                <div class="neo-hero-glow neo-glow-3"></div>
+            </div>
+            
+            <div class="neo-hero-content">
+                <div class="neo-hero-text">
+                    <div class="neo-hero-greeting" id="dynamic-greeting">¡HOLA, CAMPEÓN!</div>
+                    <h2 class="neo-hero-name" id="user-name">Cargando...</h2>
+                    <div class="neo-hero-badge">
+                        <i class="fas fa-crown"></i>
+                        <span id="user-rank">NEXUS EXPLORER</span>
+                    </div>
+                </div>
+                
+                <div class="neo-hero-avatar" id="hero-avatar">
+                    <div class="neo-avatar-container">
+                        <div class="neo-avatar-glow"></div>
+                        <div class="neo-avatar-placeholder">
+                            <i class="fas fa-user-astronaut"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Bar -->
+            <div class="neo-stats-grid">
+                <div class="neo-stat-card">
+                    <div class="neo-stat-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="neo-stat-data">
+                        <div class="neo-stat-value" id="stat-rank">#--</div>
+                        <div class="neo-stat-label">RANKING</div>
+                    </div>
+                </div>
+                
+                <div class="neo-stat-card">
+                    <div class="neo-stat-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="neo-stat-data">
+                        <div class="neo-stat-value" id="stat-streak">0</div>
+                        <div class="neo-stat-label">RACHA</div>
+                    </div>
+                </div>
+                
+                <div class="neo-stat-card">
+                    <div class="neo-stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="neo-stat-data">
+                        <div class="neo-stat-value" id="stat-points">0</div>
+                        <div class="neo-stat-label">PUNTOS</div>
+                    </div>
+                </div>
+                
+                <div class="neo-stat-card">
+                    <div class="neo-stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="neo-stat-data">
+                        <div class="neo-stat-value" id="stat-level">0.0</div>
+                        <div class="neo-stat-label">NIVEL</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Assistant Card -->
+        <section class="neo-ai-section">
+            <div class="neo-ai-card" onclick="window.neoAI.toggleChat()">
+                <div class="neo-ai-header">
+                    <div class="neo-ai-icon">
+                        <div class="neo-ai-pulse"></div>
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="neo-ai-title">
+                        <h3>NEXUS INTELLIGENCE</h3>
+                        <div class="neo-ai-status">
+                            <span class="neo-status-dot active"></span>
+                            <span id="ai-status-text">LISTO PARA ASESORAR</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="neo-ai-suggestion" id="ai-suggestion">
+                    <p>Analizando tu rendimiento...</p>
+                </div>
+                
+                <div class="neo-ai-progress">
+                    <div class="neo-ai-goal">
+                        <span id="ai-goal">Objetivo: Subir de nivel</span>
+                        <span id="ai-progress-value">45%</span>
+                    </div>
+                    <div class="neo-progress-track">
+                        <div class="neo-progress-fill ai" id="ai-progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Próximos Partidos -->
+        <section class="neo-next-match-section">
+            <div class="neo-section-header">
+                <h3><i class="fas fa-calendar-star"></i> PRÓXIMAS CITAS</h3>
+                <a href="calendario.html" class="neo-action-link">
+                    Ver todo <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            
+            <div class="neo-match-carousel">
+                <div class="neo-match-slider" id="match-slider">
+                    <!-- Slider items injected by JS -->
+                    <div class="neo-match-slide loading">
+                        <div class="neo-loading-shimmer"></div>
+                    </div>
+                </div>
+                
+                <div class="neo-carousel-controls">
+                    <button class="neo-carousel-btn prev" id="prev-match">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="neo-carousel-dots" id="carousel-dots"></div>
+                    <button class="neo-carousel-btn next" id="next-match">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Biblioteca de Partidos -->
+        <section class="neo-library-section">
+            <div class="neo-section-header">
+                <h3><i class="fas fa-archive"></i> BIBLIOTECA GALÁCTICA</h3>
+                <div class="neo-filter-buttons">
+                    <button class="neo-filter-btn active" data-filter="all">Todos</button>
+                    <button class="neo-filter-btn" data-filter="today">Hoy</button>
+                    <button class="neo-filter-btn" data-filter="upcoming">Próximos</button>
+                    <button class="neo-filter-btn" data-filter="played">Jugados</button>
+                </div>
+            </div>
+            
+            <div class="neo-library-filters">
+                <div class="neo-filter-chips">
+                    <div class="neo-chip active" data-type="all">
+                        <span>Todos los tipos</span>
+                        <i class="fas fa-times"></i>
+                    </div>
+                    <div class="neo-chip" data-type="reto">
+                        <span>Retos</span>
+                        <i class="fas fa-times"></i>
+                    </div>
+                    <div class="neo-chip" data-type="amistoso">
+                        <span>Amistosos</span>
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="neo-matches-container" id="matches-container">
+                <!-- Matches injected by JS -->
+                <div class="neo-loading-matches">
+                    <div class="neo-loading-shimmer large"></div>
+                    <div class="neo-loading-shimmer large"></div>
+                    <div class="neo-loading-shimmer large"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Acciones Rápidas -->
+        <section class="neo-quick-actions">
+            <h3><i class="fas fa-bolt"></i> ACCIONES RÁPIDAS</h3>
+            <div class="neo-actions-grid">
+                <a href="calendario.html" class="neo-action-card">
+                    <div class="neo-action-icon primary">
+                        <i class="fas fa-calendar-plus"></i>
+                    </div>
+                    <span>Reservar Pista</span>
+                </a>
+                
+                <a href="partidos.html" class="neo-action-card">
+                    <div class="neo-action-icon success">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <span>Crear Reto</span>
+                </a>
+                
+                <a href="eventos.html" class="neo-action-card">
+                    <div class="neo-action-icon warning">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <span>Unirse a Evento</span>
+                </a>
+                
+                <a href="puntosRanking.html" class="neo-action-card">
+                    <div class="neo-action-icon info">
+                        <i class="fas fa-chart-network"></i>
+                    </div>
+                    <span>Ver Ranking</span>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="neo-bottom-nav">
+        <div class="neo-nav-container">
+            <a href="home.html" class="neo-nav-item active">
+                <div class="neo-nav-icon">
+                    <i class="fas fa-home"></i>
+                </div>
+                <span class="neo-nav-label">Inicio</span>
+            </a>
+            
+            <a href="calendario.html" class="neo-nav-item">
+                <div class="neo-nav-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <span class="neo-nav-label">Reservas</span>
+            </a>
+            
+            <div class="neo-nav-fab-container">
+                <a href="partidos.html" class="neo-nav-fab">
+                    <div class="neo-fab-inner">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                </a>
+            </div>
+            
+            <a href="eventos.html" class="neo-nav-item">
+                <div class="neo-nav-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <span class="neo-nav-label">Eventos</span>
+            </a>
+            
+            <a href="puntosRanking.html" class="neo-nav-item">
+                <div class="neo-nav-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <span class="neo-nav-label">Ranking</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- IA Chat Widget -->
+    <div class="neo-ai-widget" id="ai-widget">
+        <div class="neo-ai-chat-container">
+            <div class="neo-ai-chat-header">
+                <div class="neo-ai-chat-title">
+                    <div class="neo-ai-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div>
+                        <h4>NEXUS INTELLIGENCE</h4>
+                        <p class="neo-ai-subtitle">Tu asistente de pádal</p>
+                    </div>
+                </div>
+                <button class="neo-ai-close" onclick="window.neoAI.closeChat()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="neo-ai-messages" id="ai-messages">
+                <!-- Messages appear here -->
+            </div>
+            
+            <div class="neo-ai-quick-questions">
+                <button class="neo-quick-question" data-question="¿Cómo subo de nivel?">
+                    Subir nivel
+                </button>
+                <button class="neo-quick-question" data-question="¿Quién es el número 1?">
+                    Top Ranking
+                </button>
+                <button class="neo-quick-question" data-question="¿Cómo reservo una pista?">
+                    Reservar
+                </button>
+            </div>
+            
+            <div class="neo-ai-input-container">
+                <input type="text" 
+                       class="neo-ai-input" 
+                       id="ai-input" 
+                       placeholder="Escribe tu pregunta..."
+                       autocomplete="off">
+                <button class="neo-ai-send" id="ai-send">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Partido -->
+    <div class="neo-modal-overlay" id="match-modal">
+        <div class="neo-modal">
+            <div class="neo-modal-header">
+                <h3 id="modal-title">Detalles del Partido</h3>
+                <button class="neo-modal-close" onclick="closeMatchModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="neo-modal-body" id="modal-body">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="./js/neo-ai.js"></script>
+    <script type="module" src="./js/neo-home.js"></script>
+    <script type="module">
+        import { initializeApp } from './firebase-config.js';
+        import { authGuard } from './ui-core.js';
+        
+        // Inicializar Firebase y protección de ruta
+        initializeApp();
+        authGuard();
+    </script>
+</body>
+</html>

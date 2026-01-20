@@ -9,7 +9,7 @@
     <link rel="shortcut icon" href="./imagenes/Logojafs.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Rajdhani:wght@500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="./css/app.css" />
     <link rel="stylesheet" href="./css/shared-utils.css" />
@@ -19,92 +19,174 @@
             padding-bottom: 80px;
         }
 
-        .history-match-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 12px;
+        .section-header-compact {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            transition: all 0.3s ease;
+            justify-content: space-between;
+            margin-bottom: var(--space-md);
         }
 
-        .history-match-card:hover {
-            background: rgba(var(--primary-rgb), 0.05);
-            border-color: rgba(var(--primary-rgb), 0.2);
+        .section-header-compact h2 {
+            font-size: 1.1rem;
+            margin: 0;
+            color: #fff;
         }
 
-        .hmc-left {
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .history-card-native {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: var(--transition-bounce);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .history-card-native:hover {
+            transform: scale(1.02);
+            background: var(--bg-surface-2);
+            border-color: var(--primary-glow);
+        }
+
+        .hcn-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .hcn-date {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .hcn-score {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .hcn-type {
+            font-size: 0.6rem;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: 0.5px;
+        }
+
+        .hcn-right {
+            text-align: right;
             display: flex;
             flex-direction: column;
             gap: 4px;
         }
 
-        .hmc-date {
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: var(--primary);
-            letter-spacing: 1px;
-        }
-
-        .hmc-score {
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .hmc-right {
-            text-align: right;
-        }
-
-        .badge-win {
-            background: rgba(0, 255, 127, 0.1);
-            color: #00ff7f;
-        }
-
-        .badge-loss {
-            background: rgba(255, 69, 58, 0.1);
-            color: #ff453a;
-        }
-
-        .badge-res {
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.65rem;
+        .hcn-result-badge {
+            font-size: 0.6rem;
             font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
             text-transform: uppercase;
+        }
+
+        .hcn-win {
+            background: rgba(0, 230, 118, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(0, 230, 118, 0.3);
+        }
+
+        .hcn-loss {
+            background: rgba(255, 23, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(255, 23, 68, 0.3);
+        }
+
+        .hcn-points {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 800;
+            font-size: 1rem;
         }
 
         .header-back {
             display: flex;
             align-items: center;
-            gap: 15px;
-            padding: 20px 0;
+            gap: 12px;
+            margin-bottom: var(--space-lg);
         }
 
-        .back-btn {
-            width: 40px;
-            height: 40px;
+        .back-circle {
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
+            background: var(--bg-surface-2);
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 255, 255, 0.05);
             color: #fff;
-            text-decoration: none;
-            transition: all 0.3s ease;
+            transition: var(--transition-bounce);
         }
 
-        .back-btn:hover {
+        .back-circle:hover {
             background: var(--primary);
+            transform: scale(1.1);
+        }
+
+        /* Detail Modal */
+        .modal-detail {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-glass-strong);
+            backdrop-filter: blur(20px);
+            z-index: 2000;
+            display: none;
+            opacity: 0;
+            transition: all 0.3s ease;
+            flex-direction: column;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-detail.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .detail-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-lg);
+            width: 100%;
+            max-width: 350px;
+            margin: 0 auto;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .close-detail {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            cursor: pointer;
         }
     </style>
 </head>
 
 <body class="app-body">
-    <div id="particles-js" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></div>
     <header class="app-header">
         <div class="header-left">
             <h1 class="header-title">
@@ -112,23 +194,39 @@
                 <span class="title-dot">.</span>
             </h1>
         </div>
+        <div class="header-right">
+            <a href="notificaciones.html" class="notification-bell">
+                <i class="fas fa-bell"></i>
+                <span class="notification-dot" id="header-notif-dot"></span>
+            </a>
+            <div id="header-avatar" class="user-profile-trigger"></div>
+        </div>
     </header>
 
-    <main class="container history-page-container">
-        <div class="header-back">
-            <a href="perfil.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
-            <div>
-                <h2 class="section-title-premium m-0">TODOS TUS PARTIDOS</h2>
-                <p class="text-xs opacity-50">Repasa tu trayectoria en Padeluminatis</p>
+    <main class="main-scroll-container">
+        <div class="container history-page-container pb-bottom-nav">
+            <div class="header-back mt-3">
+                <a href="perfil.html" class="back-circle"><i class="fas fa-chevron-left"></i></a>
+                <div>
+                    <h2 style="font-size: 1.1rem; font-weight: 800; font-family: 'Rajdhani';">TODOS TUS PARTIDOS</h2>
+                    <p style="font-size: 0.65rem; color: var(--text-muted);">Sincronizado con el sistema de ranking</p>
+                </div>
             </div>
-        </div>
 
-        <div id="full-history-list" class="mt-3">
-            <div class="loader-ring-container py-5">
-                <div class="loader-ring"></div>
+            <div id="full-history-list" class="history-list">
+                <div class="loader-ring-container">
+                    <div class="spinner-small"></div>
+                </div>
             </div>
         </div>
     </main>
+
+    <!-- Modal Detalles Partido -->
+    <div id="modal-match-detail" class="modal-detail">
+        <div class="detail-card animate-up" id="detail-card-content">
+            <!-- Content injected by JS -->
+        </div>
+    </div>
 
     <nav class="bottom-nav glass">
         <a href="home.html" class="nav-link">
@@ -146,9 +244,9 @@
             <i class="fas fa-medal"></i>
             <span>Eventos</span>
         </a>
-        <a href="perfil.html" class="nav-link">
-            <i class="fas fa-user"></i>
-            <span>Perfil</span>
+        <a href="partidos.html" class="nav-link">
+            <i class="fas fa-clipboard-list"></i>
+            <span>Partidos</span>
         </a>
     </nav>
 
@@ -198,18 +296,23 @@
                         sets1 = parseInt(p[0]); sets2 = parseInt(p[1]);
                     }
                     const won = isTeam1 ? (sets1 > sets2) : (sets2 > sets1);
+                    const pts = m.puntosRepartidos?.[uid] || m.puntosGanados || 0;
 
                     const card = document.createElement('div');
-                    card.className = 'history-match-card animate-fade-in';
+                    card.className = 'history-card-native animate-fade-in';
+                    card.onclick = () => showMatchDetail(m, uid);
+
                     card.innerHTML = `
-                        <div class="hmc-left">
-                            <span class="hmc-date">${date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}</span>
-                            <span class="hmc-score">${m.resultado?.sets || '0-0'}</span>
-                            <span class="text-2xs opacity-50">${m.tipo?.toUpperCase()}</span>
+                        <div class="hcn-left">
+                            <span class="hcn-date">${date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }).toUpperCase()} • ${date.getFullYear()}</span>
+                            <span class="hcn-score">${m.resultado?.sets || '0-0'}</span>
+                            <span class="hcn-type">${m.tipo?.toUpperCase()}</span>
                         </div>
-                        <div class="hmc-right">
-                            <span class="badge-res ${won ? 'badge-win' : 'badge-loss'}">${won ? 'Victoria' : 'Derrota'}</span>
-                            <div class="text-2xs mt-1">+${m.puntosGanados || 0} PTS</div>
+                        <div class="hcn-right">
+                            <span class="hcn-result-badge ${won ? 'hcn-win' : 'hcn-loss'}">${won ? 'VICTORIA' : 'DERROTA'}</span>
+                            <div class="hcn-points" style="color:${pts >= 0 ? 'var(--success)' : 'var(--danger)'}">
+                                ${pts >= 0 ? '+' : ''}${pts.toFixed(1)} <span style="font-size:0.6rem; vertical-align:middle;">PTS</span>
+                            </div>
                         </div>
                     `;
                     list.appendChild(card);
@@ -219,7 +322,71 @@
                 list.innerHTML = '<p class="text-center text-danger">Error al cargar historial.</p>';
             }
         }
+
+        function showMatchDetail(m, uid) {
+            const modal = document.getElementById('modal-match-detail');
+            const content = document.getElementById('detail-card-content');
+
+            const pos = m.jugadores.indexOf(uid);
+            const isTeam1 = pos < 2;
+            const companion = isTeam1 ? m.jugadores[pos === 0 ? 1 : 0] : m.jugadores[pos === 2 ? 3 : 2];
+            const opponents = isTeam1 ? [m.jugadores[2], m.jugadores[3]] : [m.jugadores[0], m.jugadores[1]];
+
+            content.innerHTML = `
+                <div class="close-detail" onclick="closeDetail()"><i class="fas fa-times"></i></div>
+                <div style="text-align:center; margin-bottom:20px;">
+                    <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:1px;">Resumen del Partido</div>
+                    <div style="font-family:'Rajdhani'; font-size:2rem; font-weight:900; color:var(--primary);">${m.resultado?.sets || '0-0'}</div>
+                </div>
+                
+                <div style="background:rgba(255,255,255,0.03); border-radius:12px; padding:15px; margin-bottom:15px;">
+                    <div style="font-size:0.6rem; color:var(--text-muted); margin-bottom:8px; font-weight:800; text-transform:uppercase;">Detalles de Puntos</div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <span style="font-size:0.75rem; color:#fff;">Puntos Ganados:</span>
+                        <span style="font-size:0.8rem; font-weight:800; color:var(--success)">+${(m.puntosRepartidos?.[uid] || 0).toFixed(1)}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="font-size:0.75rem; color:#fff;">Dificultad vs Rivales:</span>
+                        <span style="font-size:0.8rem; font-weight:800; color:var(--accent)">${m.tipo === 'reto' ? 'Reto' : 'Amistoso'}</span>
+                    </div>
+                </div>
+
+                <div style="font-size:0.6rem; color:var(--text-muted); margin-bottom:8px; font-weight:800; text-transform:uppercase;">Jugadores</div>
+                <div style="display:grid; grid-template-columns: 1fr; gap:8px;">
+                    <div style="font-size:0.75rem; color:#fff;">Compañero: <span style="font-weight:700;">${companion || 'Desconocido'}</span></div>
+                    <div style="font-size:0.75rem; color:#fff;">Rivales: <span style="font-weight:700;">${opponents.filter(o => o).join(', ') || 'Desconocidos'}</span></div>
+                </div>
+                
+                <button class="notif-prompt-btn" style="width:100%; margin-top:20px;" onclick="closeDetail()">ENTENDIDO</button>
+            `;
+            modal.classList.add('active');
+        }
+
+        window.closeDetail = () => {
+            document.getElementById('modal-match-detail').classList.remove('active');
+        };
     </script>
+    <nav class="bottom-nav">
+        <a href="home.html" class="nav-link">
+            <i class="fas fa-house-user"></i>
+            <span>DASHBOARD</span>
+        </a>
+        <a href="calendario.html" class="nav-link">
+            <i class="fas fa-table-tennis-paddle-ball"></i>
+            <span>RESERVAR</span>
+        </a>
+        <a href="puntosRanking.html" class="nav-fab">
+            <i class="fas fa-ranking-star"></i>
+        </a>
+        <a href="eventos.html" class="nav-link">
+            <i class="fas fa-fire-flame-curved"></i>
+            <span>EVENTOS</span>
+        </a>
+        <a href="partidos.html" class="nav-link">
+            <i class="fas fa-calendar-check"></i>
+            <span>MIS CITAS</span>
+        </a>
+    </nav>
 </body>
 
 </html>

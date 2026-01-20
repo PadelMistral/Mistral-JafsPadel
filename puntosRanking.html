@@ -5,255 +5,163 @@
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Clasificación - Padeluminatis</title>
+    <meta name="theme-color" content="#030508">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Ranking - Padeluminatis</title>
     <link rel="icon" type="image/x-icon" href="./imagenes/Logojafs.png">
+    <link rel="apple-touch-icon" href="./imagenes/Logojafs.png">
+    <link rel="manifest" href="./manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="./css/design-system-v3.css">
     <link rel="stylesheet" href="./css/app.css">
     <link rel="stylesheet" href="./css/shared-utils.css">
     <link rel="stylesheet" href="./css/bottom-nav.css">
     <link rel="stylesheet" href="./css/ranking-premium.css">
-    <style>
-        /* Ranking Competitive styles */
-        .ranking-container {
-            max-width: 600px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
-        }
-
-        .podium-area {
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            padding: 2.5rem 0.5rem 1rem;
-            min-height: 240px;
-            background: radial-gradient(circle at bottom, rgba(255, 107, 53, 0.1) 0%, transparent 80%);
-            gap: 10px;
-        }
-
-        .podium-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            cursor: pointer;
-            transition: 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-        }
-
-        .podium-item:hover {
-            transform: translateY(-12px) scale(1.05);
-        }
-
-        .podium-avatar-wrap {
-            position: relative;
-            margin-bottom: 12px;
-        }
-
-        .podium-rank-badge {
-            position: absolute;
-            bottom: -5px;
-            right: -5px;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            font-size: 0.8rem;
-            color: #000;
-            border: 3px solid #0d0e12;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-            z-index: 2;
-        }
-
-        .rank-2 {
-            order: 1;
-        }
-
-        .rank-1 {
-            order: 2;
-            transform: translateY(-30px);
-            z-index: 2;
-        }
-
-        .rank-3 {
-            order: 3;
-        }
-
-        .rank-1 .podium-rank-badge {
-            background: linear-gradient(135deg, #FFD700, #FFA500);
-            width: 36px;
-            height: 36px;
-            font-size: 1.1rem;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
-        }
-
-        .rank-2 .podium-rank-badge {
-            background: linear-gradient(135deg, #C0C0C0, #808080);
-        }
-
-        .rank-3 .podium-rank-badge {
-            background: linear-gradient(135deg, #CD7F32, #8B4513);
-        }
-
-        .podium-name {
-            font-family: 'Rajdhani';
-            font-weight: 800;
-            font-size: 0.85rem;
-            color: #fff;
-            text-align: center;
-            max-width: 90px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            text-transform: uppercase;
-        }
-
-        .podium-pts {
-            font-size: 0.7rem;
-            font-weight: 900;
-            color: var(--primary);
-            text-shadow: 0 0 10px rgba(255, 107, 53, 0.3);
-            letter-spacing: 1px;
-        }
-
-        /* Stats Pills */
-        .lr-stats-row {
-            display: flex;
-            gap: 6px;
-            margin-top: 4px;
-        }
-
-        .stat-pill {
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 0.6rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .stat-pill.racha.hot {
-            background: rgba(255, 69, 0, 0.15);
-            color: #FF4500;
-            border: 1px solid rgba(255, 69, 0, 0.2);
-            box-shadow: 0 0 10px rgba(255, 69, 0, 0.1);
-        }
-
-        .stat-pill.racha.cold {
-            background: rgba(0, 195, 255, 0.15);
-            color: #00C3FF;
-            border: 1px solid rgba(0, 195, 255, 0.2);
-        }
-
-        .stat-pill.lvl {
-            background: rgba(255, 255, 255, 0.05);
-            color: rgba(255, 255, 255, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .lr-avatar-outer {
-            flex-shrink: 0;
-            border-radius: 50%;
-            padding: 2px;
-            background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), transparent);
-        }
-
-        .league-table-header {
-            background: rgba(20, 20, 30, 0.4);
-            backdrop-filter: blur(10px);
-            padding: 12px 20px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
-    </style>
+    <link rel="stylesheet" href="./css/match-modal-v2.css">
 </head>
 
 <body class="app-body">
-    <header class="app-header">
+    <header class="app-header" style="height: 55px; padding: 0 15px;">
         <div class="header-left">
-            <h1 class="header-title">
-                <span class="title-main">RANKING</span>
-                <span class="title-dot">.</span>
-            </h1>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <img src="./imagenes/Logojafs.png" alt="Logo"
+                    style="width: 30px; height: 30px; object-fit: cover; border-radius: 50%; filter: drop-shadow(0 0 5px rgba(255,107,53,0.5));">
+                <h1 class="header-title" style="font-size: 1.1rem;">
+                    <span class="title-main">RANKING</span>
+                    <span class="title-dot">.</span>
+                </h1>
+            </div>
         </div>
-        <div class="header-right">
-            <a href="notificaciones.html" class="notification-bell">
-                <i class="fas fa-bell"></i>
-                <span class="notification-dot"></span>
+        <div class="header-right" style="gap: 5px;">
+            <a href="admin.html" id="admin-link" class="admin-access-btn" style="display: none; font-size: 0.9rem;">
+                <i class="fas fa-user-shield"></i>
             </a>
-            <div id="header-avatar-container"></div>
+            <a href="notificaciones.html" class="nav-icon-btn notification-bell">
+                <i class="fas fa-bell"></i>
+                <span class="notification-dot" id="header-notif-dot" style="display:none;"></span>
+            </a>
+            <a href="perfil.html" class="user-profile-trigger-link">
+                <div class="user-profile-trigger" style="width: 32px; height: 32px;">
+                    <div class="spinner-small" style="width: 15px; height: 15px; border-width: 2px;"></div>
+                </div>
+            </a>
         </div>
     </header>
 
-    <main class="ranking-container animate-fade-in" style="padding: 10px;">
+    <main class="main-scroll-container">
+        <div class="ranking-container pb-bottom-nav">
+            <!-- PODIO FÍSICO TOP 3 -->
+            <section class="podium-section animate-in">
+                <div class="physical-podium">
+                    <!-- 2nd Place -->
+                    <div class="podium-step step-2" id="compact-2">
+                        <div class="podium-player">
+                            <div class="podium-avatar" id="c-avatar-2"></div>
+                            <div class="podium-name" id="c-name-2">---</div>
+                        </div>
+                        <div class="step-block">
+                            <span class="step-number">2</span>
+                            <div class="step-pts" id="c-pts-2">0</div>
+                        </div>
+                    </div>
 
-        <!-- Podium Section (NEW) -->
-        <div id="ranking-podium" class="podium-area flex-center gap-3 mb-4 mt-2">
-            <!-- Injected by ranking.js -->
-        </div>
+                    <!-- 1st Place -->
+                    <div class="podium-step step-1" id="compact-1">
+                        <div class="podium-player">
+                            <i class="fas fa-crown podium-crown"></i>
+                            <div class="podium-avatar" id="c-avatar-1"></div>
+                            <div class="podium-name" id="c-name-1">---</div>
+                        </div>
+                        <div class="step-block">
+                            <span class="step-number">1</span>
+                            <div class="step-pts" id="c-pts-1">0</div>
+                        </div>
+                    </div>
 
-        <div class="league-table-header">
-            <div class="lth-rank">#</div>
-            <div class="lth-player">JUGADOR GLOBAL</div>
-            <div class="lth-pts">ELO</div>
-        </div>
+                    <!-- 3rd Place -->
+                    <div class="podium-step step-3" id="compact-3">
+                        <div class="podium-player">
+                            <div class="podium-avatar" id="c-avatar-3"></div>
+                            <div class="podium-name" id="c-name-3">---</div>
+                        </div>
+                        <div class="step-block">
+                            <span class="step-number">3</span>
+                            <div class="step-pts" id="c-pts-3">0</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-        <div id="ranking-list" class="ranking-list-container flex-column gap-2">
-            <div class="loader-ring-container py-5">
-                <div class="loader-ring"></div>
+            <!-- RANKING TABLE -->
+            <div class="ranking-table-container animate-in">
+                <table class="ranking-table">
+                    <thead>
+                        <tr>
+                            <th class="col-rank">#</th>
+                            <th class="col-user">JUGADOR</th>
+                            <th class="col-stats">ESTADS</th>
+                            <th class="col-points">PUNTOS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ranking-table-body">
+                        <!-- Rows injected by JS -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </main>
 
-    <!-- MODAL DE HISTORIAL DETALLADO (NEON STYLE) -->
-    <div id="user-details-modal" class="modal-overlay">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h3 class="modal-title">HISTORIAL DETALLADO</h3>
-                <button class="close-btn" onclick="closeUserModal()">&times;</button>
+    <!-- MODAL DE HISTORIAL DETALLADO -->
+    <div id="user-details-modal" class="modal-ranking-premium">
+        <div class="modal-header-nav">
+            <div class="modal-close-btn" onclick="closeUserModal()">
+                <i class="fas fa-chevron-left"></i>
             </div>
+            <div class="modal-title-text">RESUMEN DE JUGADOR</div>
+            <div style="width: 36px;"></div>
+        </div>
 
-            <div id="modal-user-summary" class="glass-strong p-3 mb-3 text-center"
-                style="border-bottom:1px solid rgba(255,255,255,0.05); border-radius:15px; margin: 15px;">
-                <!-- Summary injected by JS -->
-            </div>
+        <div id="modal-user-summary" class="user-profile-summary">
+            <!-- Summary injected by JS -->
+        </div>
 
-            <div class="modal-body p-0" id="modal-history-list" style="background:transparent;">
-                <!-- Match cards injected by JS -->
-            </div>
+        <div class="history-scroll" id="modal-history-list">
+            <!-- Match cards injected by JS -->
         </div>
     </div>
 
-    <nav class="bottom-nav glass">
+    <nav class="bottom-nav">
         <a href="home.html" class="nav-link">
             <i class="fas fa-home"></i>
-            <span>Inicio</span>
+            <span>INICIO</span>
         </a>
         <a href="calendario.html" class="nav-link">
             <i class="fas fa-calendar-alt"></i>
-            <span>Reserva</span>
+            <span>PISTAS</span>
         </a>
-        <a href="puntosRanking.html" class="nav-fab active">
-            <i class="fas fa-trophy"></i>
+        <a href="home.html" class="nav-fab">
+            <div class="fab-inner">
+                <img src="./imagenes/Logojafs.png" alt="O" style="width:24px; height:24px; border-radius:50%">
+            </div>
         </a>
         <a href="eventos.html" class="nav-link">
-            <i class="fas fa-medal"></i>
-            <span>Eventos</span>
+            <i class="fas fa-bolt"></i>
+            <span>EVENTOS</span>
         </a>
         <a href="partidos.html" class="nav-link">
-            <i class="fas fa-clipboard-list"></i>
-            <span>Partidos</span>
+            <i class="fas fa-table-tennis"></i>
+            <span>PARTIDOS</span>
         </a>
     </nav>
 
+    <script type="module">
+        import { initSharedUI } from './js/ui-core.js';
+        initSharedUI('RANKING');
+    </script>
     <script type="module" src="./js/ranking.js"></script>
 </body>
 

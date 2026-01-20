@@ -1,59 +1,49 @@
-import { db } from './firebase-config.js';
+import { db, auth } from './firebase-config.js';
 import { doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js";
+import { createNotification } from './notifications-service.js';
 
 // --- ELO FORMULA (The "Spectacular" one) ---
 
 export function calcularPuntosElo({ jugador, rivales, companero, resultado, margen, experiencia, racha }) {
     const factorProgresivo = 1 - ((jugador.nivel - 2.0) / 2.0) * 0.7;
-    const baseBruta = resultado === 'Victoria' ? 12.5 : -10.8;
+    const baseBruta = resultado === 'Victoria' ? 12.0 : -11.0;
     const base = resultado === 'Victoria' 
-        ? Math.max(2, baseBruta * factorProgresivo) 
-        : Math.min(-2, baseBruta * (2 - factorProgresivo));
+        ? Math.max(3, baseBruta * factorProgresivo) 
+        : Math.min(-3, baseBruta * (2 - factorProgresivo));
 
-    const nivelRival = rivales.reduce((acc, r) => acc + (parseFloat(r.nivel) || 2), 0) / rivales.length;
+    const nivelRival = rivales.reduce((acc, r) => acc + (r.nivel || 2), 0) / rivales.length;
     const diferenciaNivel = nivelRival - jugador.nivel;
-    const factorDificultadRival = diferenciaNivel * 15.7 * factorProgresivo;
+    const factorDificultadRival = diferenciaNivel * 22.5 * factorProgresivo;
 
     let factorCompanero = 0;
     if (companero) {
-        factorCompanero = -1 * ((parseFloat(companero.nivel) || 2) - nivelRival) * 6.3 * factorProgresivo;
+        const diffCompanero = (companero.nivel || 2) - jugador.nivel;
+        factorCompanero = -diffCompanero * 4.5 * factorProgresivo;
     }
 
     let factorMargen = 1.0;
     if (resultado === 'Victoria') {
-        if (margen >= 3) factorMargen = 1.85;
-        else if (margen === 2) factorMargen = 1.45;
-        else if (margen === 1) factorMargen = 1.12;
+        if (margen >= 3) factorMargen = 1.9;
+        else if (margen === 2) factorMargen = 1.5;
+        else if (margen === 1) factorMargen = 1.15;
     } else {
-        if (margen >= 3) factorMargen = 0.42;
-        else if (margen === 2) factorMargen = 0.67;
-        else if (margen === 1) factorMargen = 0.89;
+        if (margen >= 3) factorMargen = 0.4;
+        else if (margen === 2) factorMargen = 0.65;
+        else if (margen === 1) factorMargen = 0.9;
     }
 
-    const factorExperiencia = Math.min(1.45, 1 + (experiencia * 0.0087));
-    const factorNivelJugador = Math.max(0.7, Math.min(1.3, 1.0 + (jugador.nivel - 2.5) * 0.15));
+    const factorExperiencia = Math.min(1.5, 1 + (experiencia * 0.01));
     
-    let factorRacha = 1.0;
-    if (resultado === 'Victoria') {
-        if (racha >= 3) factorRacha = 1.25;
-        else if (racha <= -3) factorRacha = 1.1;
-    } else {
-        if (racha <= -3) factorRacha = 1.15;
+    let bonoRacha = 0;
+    if (resultado === 'Victoria' && racha >= 2) {
+        bonoRacha = Math.min(15, racha * 3.5);
     }
 
-    const multiplicadorGlobal = factorMargen * factorExperiencia * factorNivelJugador * factorRacha;
-    const pointsBrutos = (base + factorDificultadRival + factorCompanero);
-    const pointsFinal = pointsBrutos * multiplicadorGlobal;
+    let points = (base + factorDificultadRival + factorCompanero) * factorMargen * factorExperiencia;
     
-    return {
-        total: parseFloat(pointsFinal.toFixed(2)),
-        breakdown: {
-            base: parseFloat((base * multiplicadorGlobal).toFixed(2)),
-            rival: parseFloat((factorDificultadRival * multiplicadorGlobal).toFixed(2)),
-            companero: parseFloat((factorCompanero * multiplicadorGlobal).toFixed(2)),
-            multiplicador: parseFloat(multiplicadorGlobal.toFixed(2))
-        }
-    };
+    if (resultado === 'Victoria') points += bonoRacha;
+    
+    return parseFloat(points.toFixed(2));
 }
 
 /**
@@ -76,7 +66,7 @@ export async function updatePlayerPoints(uid, matchData, isWin, resultStr) {
         // For now, let's assume we pass the necessary data
         const { rivales, companero, margen } = matchData;
 
-        const ptsObj = calcularPuntosElo({
+        const puntosGanados = calcularPuntosElo({
             jugador: { nivel: currentNivel },
             rivales: rivales,
             companero: companero,
@@ -86,12 +76,16 @@ export async function updatePlayerPoints(uid, matchData, isWin, resultStr) {
             racha: 0
         });
 
-        const puntosGanados = ptsObj.total;
         const newPoints = currentPoints + puntosGanados;
+        
+        // Basic Level Up Logic (if points exceed thresholds)
+        // This should probably be more sophisticated, but for now:
+        let newNivel = currentNivel;
+        // Example: Every 500 points = +0.05 level? (Just placeholder logic)
+        // Usually level is manual or based on a specific curve.
         
         await updateDoc(userRef, {
             puntosRankingTotal: newPoints,
-            puntosRanking: newPoints,
             partidosJugados: increment(1),
             victorias: isWin ? increment(1) : increment(0),
             derrotas: isWin ? increment(0) : increment(1)
@@ -151,7 +145,7 @@ export async function processMatchResults(matchId, type, resStr) {
             const partnerData = playerMap[partnerId] || { nivel: 2.0 };
             const rivalData = opponents.map(id => playerMap[id] || { nivel: 2.0 });
 
-            const ptsObj = calcularPuntosElo({
+            const pts = calcularPuntosElo({
                 jugador: { nivel: parseFloat(pData.nivel || 2.0) },
                 rivales: rivalData,
                 companero: { nivel: parseFloat(partnerData.nivel || 2.0) },
@@ -161,39 +155,36 @@ export async function processMatchResults(matchId, type, resStr) {
                 racha: parseInt(pData.rachaActual || 0)
             });
 
-            const pts = ptsObj.total; // Use total for addition
             const currentTotal = parseFloat(pData.puntosRankingTotal || 4.0);
             const newTotal = Math.max(0, currentTotal + pts);
 
             // Re-calculate Level based on the "Spectacular" curve
             let newLevel = parseFloat(pData.nivel || 2.0);
             
+            // Check if level needs to increase
             while (newTotal >= calcularPuntosIniciales(newLevel + 0.01) && newLevel < 4.0) {
                 newLevel += 0.01;
                 newLevel = Math.round(newLevel * 100) / 100;
             }
+            // Check if level needs to decrease
             while (newTotal < calcularPuntosIniciales(newLevel) && newLevel > 2.0) {
                 newLevel -= 0.01;
                 newLevel = Math.round(newLevel * 100) / 100;
             }
 
+            // Calculate new racha (streak)
             const currentRacha = parseInt(pData.rachaActual || 0);
-            let newRacha = isWin ? (currentRacha >= 0 ? currentRacha + 1 : 1) : (currentRacha <= 0 ? currentRacha - 1 : -1);
+            let newRacha = 0;
+            if (isWin) {
+                newRacha = currentRacha >= 0 ? currentRacha + 1 : 1;
+            } else {
+                newRacha = currentRacha <= 0 ? currentRacha - 1 : -1;
+            }
 
-            // Store this user's points for this match IN THE MATCH DOC
-            // This is key for the "desglose" requested by the user
-            if (!match.puntosDetalle) match.puntosDetalle = {};
-            match.puntosDetalle[uid] = {
-                total: pts,
-                ...ptsObj.breakdown,
-                nivelPrev: parseFloat(pData.nivel || 2.0),
-                nivelPost: newLevel
-            };
-
-            // Update User Doc
+            // Update User Doc with ALL fields
             await updateDoc(doc(db, "usuarios", uid), {
                 puntosRankingTotal: newTotal,
-                puntosRanking: newTotal,
+                puntosRanking: newTotal, // Also update this for compatibility
                 nivel: newLevel,
                 partidosJugados: increment(1),
                 victorias: isWin ? increment(1) : increment(0),
@@ -203,11 +194,31 @@ export async function processMatchResults(matchId, type, resStr) {
                 ultimaActualizacion: new Date()
             });
 
-            console.log(`✅ Updated ${uid}: ${pts >= 0 ? '+' : ''}${pts.toFixed(1)} pts, Level ${newLevel.toFixed(2)}`);
+            // Notification for Points
+            const ptsSign = pts >= 0 ? '+' : '';
+            const msg = `Pts: ${ptsSign}${pts.toFixed(1)} | Racha: ${newRacha}`;
+            await createNotification(uid, "Actualización Ranking", msg, pts >= 0 ? 'success' : 'warning', 'puntosRanking.html');
+
+            if (newLevel > parseFloat(pData.nivel || 2.0)) {
+                await createNotification(uid, "¡SUBIDA DE NIVEL!", `Ascenso a NV ${newLevel.toFixed(2)}`, 'rank_up', 'puntosRanking.html');
+            }
+
+            // If it's the current user, show spectacular toasts
+            if (uid === auth.currentUser?.uid) {
+                if (newLevel > parseFloat(pData.nivel || 2.0)) {
+                    if (window.showToast) window.showToast('¡SUBIDA DE NIVEL!', `Has alcanzado el nivel ${newLevel.toFixed(2)}`, 'success');
+                } else if (newLevel < parseFloat(pData.nivel || 2.0)) {
+                    if (window.showToast) window.showToast('NIVEL AJUSTADO', `Tu nuevo nivel es ${newLevel.toFixed(2)}`, 'warning');
+                }
+
+                if (window.showToast) {
+                    const diff = pts.toFixed(1);
+                    window.showToast('PUNTOS ACTUALIZADOS', `${pts >= 0 ? ' Ganaste ' : ' Perdiste '}${Math.abs(diff)} puntos en el Ranking`, pts >= 0 ? 'success' : 'error');
+                }
+            }
+
+            console.log(`✅ Updated ${uid}: ${pts >= 0 ? '+' : ''}${pts.toFixed(1)} pts, Level ${newLevel.toFixed(2)}, Racha ${newRacha}`);
         }
-        
-        // Final update to match document to save the points breakdown for all
-        await updateDoc(matchRef, { puntosDetalle: match.puntosDetalle });
         
         return true;
     } catch (e) {

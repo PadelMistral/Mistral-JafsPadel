@@ -14,14 +14,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  visibility: hidden;
-  pointer-events: none;
 }
 
 .modal.active {
   opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
 }
 
 .modal-content {

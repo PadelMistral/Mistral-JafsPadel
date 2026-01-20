@@ -1,4 +1,4 @@
-import { authGuard, showToast } from './ui-core.js';
+console.log("📁 [Calendar] calendario.js file loaded and executing...");
 import { auth, db } from './firebase-config.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.7.3/firebase-auth.js';
 import {
@@ -17,6 +17,9 @@ import {
     closeChatSubscription,
     renderWeatherShared
 } from './match-service.js';
+import { authGuard, initSharedUI, showToast } from './ui-core.js';
+
+initSharedUI('RESERVAR');
 
 // --- DEBUG ---
 window.onerror = function(msg, url, lineNo, columnNo, error) {
@@ -51,6 +54,8 @@ let allUsersMap = {};
 let selectedPlayers = []; 
 let currentSlotIndex = -1; 
 let currentMatchEditing = null; 
+let selectorContext = null; // { mode: 'creation' | 'edit', matchId: string, type: string } 
+let guestLevels = {}; // Map to store temporary guest levels 
 
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => initApp());
@@ -160,6 +165,38 @@ function changeWeek(direction) {
 }
 
 // --- CALENDAR RENDERING ---
+// --- CALENDAR RENDERING ---
+let weekWeather = {}; // Global state for weather
+
+async function loadWeeklyWeather(start) {
+    try {
+        const lat = 39.4938; const lon = -0.3957;
+        const sStr = start.toISOString().split('T')[0];
+        const end = new Date(start); end.setDate(start.getDate()+6);
+        const eStr = end.toISOString().split('T')[0];
+        
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&start_date=${sStr}&end_date=${eStr}`);
+        const data = await res.json();
+        
+        if(data.daily) {
+            weekWeather = {};
+            data.daily.time.forEach((t, i) => {
+                const code = data.daily.weather_code[i];
+                const max = Math.round(data.daily.temperature_2m_max[i]);
+                const min = Math.round(data.daily.temperature_2m_min[i]);
+                
+                let icon = 'fa-sun'; let color = '#FFD700';
+                if(code > 3) { icon = 'fa-cloud-sun'; color='#ffc107'; }
+                if(code > 45) { icon = 'fa-smog'; color='#90a4ae'; }
+                if(code >= 51) { icon = 'fa-cloud-rain'; color='#4fc3f7'; }
+                if(code >= 80) { icon = 'fa-cloud-showers-heavy'; color='#039be5'; }
+                
+                weekWeather[t] = { icon, max, min, color };
+            });
+        }
+    } catch(e) { console.error("Weather load err", e); }
+}
+
 async function renderCalendar() {
     console.log("📅 [Calendar] renderCalendar triggered");
     if (!usuarioActual) {
@@ -185,6 +222,9 @@ async function renderCalendar() {
         endOfWeek.setDate(startOfWeek.getDate() + 6);
         endOfWeek.setHours(23,59,59,999);
 
+        // Load Weather Parallel
+        await loadWeeklyWeather(startOfWeek);
+
         console.log("📅 [Calendar] Range calculated:", startOfWeek.toDateString(), "to", endOfWeek.toDateString());
 
         const rangeEl = document.getElementById('rango-semana');
@@ -207,21 +247,29 @@ async function renderCalendar() {
                     const d = new Date(startOfWeek);
                     d.setDate(startOfWeek.getDate() + i);
                     const isToday = d.toDateString() === new Date().toDateString();
-                    return `<div class="day-header ${isToday ? 'today' : ''}"><span class="day-name">${name}</span><span class="day-num">${d.getDate()}</span></div>`;
+                    const wKey = d.toISOString().split('T')[0];
+                    const w = weekWeather[wKey];
+                    const wHtml = w ? `<div style="font-size:0.5rem; color:${w.color}; margin-top:2px;" class="flex-center gap-1"><i class="fas ${w.icon}"></i> ${w.max}°</div>` : '';
+                    
+                    return `<div class="day-header ${isToday ? 'today' : ''}">
+                        <span class="day-name">${name}</span>
+                        <span class="day-num">${d.getDate()}</span>
+                        ${wHtml}
+                    </div>`;
                 }).join('')}
             </div>
             <div class="grid-body">
         `;
 
         FRANJAS_HORARIAS.forEach((franja, fIdx) => {
-            console.log(`⏰ [Calendar] Rendering row: ${franja.inicio}`);
+            // console.log(`⏰ [Calendar] Rendering row: ${franja.inicio}`);
             html += `<div class="time-row"><div class="time-col"><span class="time-start">${franja.inicio}</span></div>`;
             for (let i = 0; i < 7; i++) {
                 const currentDay = new Date(startOfWeek);
                 currentDay.setDate(startOfWeek.getDate() + i);
                 const match = findMatchInSlot(currentDay, franja.inicio);
                 const slotState = getSlotState(match);
-                if (match) console.log(`🎾 [Calendar] Found match at ${currentDay.toDateString()} ${franja.inicio}:`, match.id);
+                // if (match) console.log(`🎾 [Calendar] Found match at ${currentDay.toDateString()} ${franja.inicio}:`, match.id);
                 html += `
                     <div class="slot-cell ${slotState}" onclick="handleCellClick('${currentDay.toISOString()}', '${franja.inicio}')">
                         ${renderSlotContent(match, slotState)}
@@ -232,7 +280,7 @@ async function renderCalendar() {
         });
 
         container.innerHTML = html + `</div>`;
-        updateBottomWeather(startOfWeek);
+        // updateBottomWeather(startOfWeek); // using header now
     } catch (error) {
         console.error("Error rendering calendar:", error);
         container.innerHTML = `<div class="error-msg p-4 text-center">Error al cargar calendario. Inténtelo de nuevo.</div>`;
@@ -246,17 +294,7 @@ async function loadMatchesInRange(start, end) {
     const allMatches = [];
     
     try {
-        // Optimization: Fetch only matches within the date range
-        // Note: Firestore requires an index for this if the collection is large, but usually single field range query works fine.
-        const promises = collections.map(colName => {
-             const q = query(
-                 collection(db, colName),
-                 where('fecha', '>=', Timestamp.fromDate(start)),
-                 where('fecha', '<=', Timestamp.fromDate(end))
-             );
-             return getDocs(q);
-        });
-
+        const promises = collections.map(colName => getDocs(query(collection(db, colName))));
         const snapshots = await Promise.all(promises);
         
         snapshots.forEach((snap, idx) => {
@@ -264,9 +302,12 @@ async function loadMatchesInRange(start, end) {
             console.log(`🔍 [Calendar] Processing snapshot for ${colName}... Items: ${snap.size}`);
             snap.forEach(docSnap => {
                 const data = docSnap.data();
-                // Double check date locally just to be safe with timezone edges, though query should handle it
+                if (!data.fecha) {
+                    console.warn(`⚠️ [Calendar] Match ${docSnap.id} has no 'fecha'. Skipping.`);
+                    return;
+                }
                 const date = data.fecha?.toDate ? data.fecha.toDate() : new Date(data.fecha);
-                if (date) {
+                if (date >= start && date <= end) {
                     allMatches.push({ 
                         id: docSnap.id, 
                         tipo: colName.includes('Reto') ? 'reto' : 'amistoso', 
@@ -280,7 +321,6 @@ async function loadMatchesInRange(start, end) {
         console.log(`Loaded ${partidos.length} matches.`);
     } catch (err) {
         console.error("Error loading matches:", err);
-        showToast("Error loading matches. Check console.", "danger");
         throw err;
     }
 }
@@ -307,36 +347,22 @@ function getSlotState(match) {
 function renderSlotContent(match, state) {
     if (state === 'free') return `<span class="status-label"><i class="fas fa-plus opacity-30"></i></span>`;
     
-    // Data setup
-    const isReto = match.tipo === 'reto';
-    const isPlayed = match.estado === 'jugado';
     const count = match.jugadores?.length || 0;
+    const isReto = match.tipo === 'reto';
     const firstPlayerId = match.jugadores?.[0];
     const u = allUsersMap[firstPlayerId];
     const name = u?.nombreUsuario || u?.nombre || 'JUGADOR';
     const nameStr = (name.split(' ')[0] || '---').toUpperCase();
-
-    // Classes
-    let cardClass = 'calendar-match-card ';
-    if (isPlayed) cardClass += 'cmc-finished';
-    else if (isReto) cardClass += 'cmc-reto';
-    else cardClass += 'cmc-amistoso';
-
-    // Icons
-    const bgIcon = isReto ? 'fa-fire' : 'fa-handshake';
-
-    return `
-    <div class="${cardClass}">
-        <div class="cmc-content">
-            <div class="cmc-name">${nameStr}</div>
-            <div class="cmc-info">
-                 <span class="cmc-badge"><i class="fas fa-users"></i> ${count}/4</span>
-                 ${isReto ? '<span class="cmc-badge" style="color:#ffd54f"><i class="fas fa-bolt"></i></span>' : ''}
-            </div>
+    
+    if (match.estado === 'jugado') return `<div class="occupied-info opacity-40"><i class="fas fa-check-double text-success"></i></div>`;
+    
+    return `<div class="occupied-info">
+        <span class="occupant-name" style="color:${state === 'mine' ? 'var(--primary)' : '#fff'}">${nameStr}</span>
+        <div class="flex-center gap-1 mt-1">
+            <span style="font-size:0.65rem;opacity:0.75;font-weight:800"><i class="fas ${isReto ? 'fa-fire' : 'fa-users'}"></i> ${count}/4</span>
+            <i class="fas fa-comment-dots" style="font-size:0.6rem; color:var(--accent); opacity:0.8"></i>
         </div>
-        <i class="fas ${bgIcon} cmc-bg-icon"></i>
-    </div>
-    `;
+    </div>`;
 }
 
 // --- MODAL & ACTIONS ---
@@ -347,13 +373,6 @@ window.handleCellClick = async (dateStr, time) => {
     // Parse time string (HH:MM) to set hours on date object for accurate weather lookup
     const [hours, minutes] = time.split(':').map(Number);
     date.setHours(hours, minutes, 0, 0);
-
-    // --- BLOQUEO PASADO ---
-    const ahora = new Date();
-    if (date < ahora) {
-        showToast("HORARIO NO DISPONIBLE (PASADO)", "warning");
-        return;
-    }
 
     const match = findMatchInSlot(date, time);
     const modal = document.getElementById('modal-partido-universal');
@@ -386,23 +405,22 @@ function renderCreationForm(container, date, time) {
     container.innerHTML = `
         <div class="match-setup-premium animate-fade-in">
             
-            <!-- Hero Section: Weather & Time in Neon Card Style -->
+            <!-- Hero Section: Weather & Time -->
             <div id="creation-weather-container"></div>
             
-            <div class="in-modal-card">
-                 <div class="mmc-top" style="border-bottom:1px dashed rgba(255,255,255,0.1); padding-bottom:10px;">
-                    <div class="mmc-date-weather">
-                        <span style="font-size:0.9rem; color:#fff; font-weight:700;">${date.toLocaleDateString('es-ES', {day:'numeric', month:'short'}).toUpperCase()}</span>
-                        <span class="mmc-dw-sep">|</span>
-                        <span class="text-time" style="font-size:1rem">${time} - ${endTime}</span>
-                    </div>
+            <div class="creation-hero glass-light p-3 rounded-xl mb-4 border-glass">
+                <div class="text-xs opacity-50 uppercase font-bold tracking-widest mb-1">HORARIO SELECCIONADO</div>
+                <div class="creation-time-display">
+                    ${time} <span style="font-size:1rem; opacity:0.5; font-weight:400">- ${endTime}</span>
                 </div>
-                 <div class="text-xs text-center text-muted font-bold tracking-widest mt-2 uppercase">Configuración de Reserva</div>
+                <div class="creation-date-sub">
+                    ${date.toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'}).toUpperCase()}
+                </div>
             </div>
 
             <!-- Category Selector -->
             <input type="hidden" id="new-match-category-val" value="amistoso">
-            <div class="category-toggle-container mb-4">
+            <div class="category-toggle-container">
                 <button id="cat-amistoso" class="cat-btn active amistoso" onclick="switchCategory('amistoso')">
                     <i class="fas fa-handshake"></i>
                     <span>AMISTOSO</span>
@@ -420,17 +438,19 @@ function renderCreationForm(container, date, time) {
                 
                 <div class="level-restriction-box glass-strong p-3 mb-3 rounded-lg border-glass">
                     <div class="flex-between mb-2">
-                        <span class="text-xs font-bold text-accent"><i class="fas fa-shield-halved"></i> NIVEL REQUERIDO</span>
-                        <span class="badge" id="range-val" style="background:#333">OPEN</span>
+                        <span class="text-xs font-bold text-accent"><i class="fas fa-shield-halved"></i> NIVEL PERMITIDO</span>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="restrict-toggle" onchange="toggleRestriction()">
+                        </div>
                     </div>
-                    <div class="flex-between gap-md">
+                    <div id="restriction-inputs" style="display:none;" class="flex-between gap-md animate-fade-in mt-2">
                         <div class="range-input-box">
                             <span class="range-label">MÍNIMO</span>
-                            <input type="number" id="min-points" class="form-input-pro text-center" value="0">
+                            <input type="number" id="min-points" class="form-input-pro text-center" value="2.0" min="2" max="5" step="0.5">
                         </div>
                         <div class="range-input-box">
                             <span class="range-label">MÁXIMO</span>
-                            <input type="number" id="max-points" class="form-input-pro text-center" value="5000">
+                            <input type="number" id="max-points" class="form-input-pro text-center" value="5.0" min="2" max="5" step="0.5">
                         </div>
                     </div>
                 </div>
@@ -452,27 +472,26 @@ function renderCreationForm(container, date, time) {
                     <div class="vs-schema-title">ALINEACIÓN</div>
                     <div class="vs-box">
                         <div class="team-box">
-                            <div id="slot-0" class="player-slot filled" onclick="handleSlotClick(0)" style="border-left: 3px solid var(--primary)">
-                                <span class="slot-name">${(userData?.nombreUsuario || 'YO').toUpperCase()}</span>
-                                <div class="slot-remove" onclick="event.stopPropagation(); clearSlot(0)"><i class="fas fa-times"></i></div>
+                            <div id="slot-0" class="player-slot filled" style="border-left: 3px solid var(--primary)">
+                                <span class="text-xs font-bold truncate">${(userData?.nombreUsuario || 'YO').toUpperCase()}</span>
                             </div>
-                            <div id="slot-1" class="player-slot" onclick="handleSlotClick(1)">
+                            <div id="slot-1" class="player-slot" onclick="openSelector(1)">
                                 <i class="fas fa-plus opacity-50"></i>
                             </div>
                         </div>
                         <div class="vs-circle">VS</div>
                         <div class="team-box">
-                            <div id="slot-2" class="player-slot" onclick="handleSlotClick(2)">
+                            <div id="slot-2" class="player-slot" onclick="openSelector(2)">
                                 <i class="fas fa-plus opacity-50"></i>
                             </div>
-                            <div id="slot-3" class="player-slot" onclick="handleSlotClick(3)">
+                            <div id="slot-3" class="player-slot" onclick="openSelector(3)">
                                 <i class="fas fa-plus opacity-50"></i>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <button onclick="executeCreateMatch('${date.toISOString()}', '${time}')" class="btn btn-primary w-100 mt-4 btn-lg shadow-lg">
+                <button onclick="executeCreateMatch('${date.toISOString()}', '${time}')" class="btn btn-primary w-100 mt-2 btn-lg shadow-lg">
                     CREAR PARTIDA <i class="fas fa-rocket ms-1"></i>
                 </button>
             </div>
@@ -483,6 +502,8 @@ function renderCreationForm(container, date, time) {
     window.switchCategory('amistoso');
     
     // Fetch Weather for this date
+    // We pass a dummy container because renderWeatherShared prepends to it.
+    // So we invoke it on our specific placeholder.
     const wContainer = document.getElementById('creation-weather-container');
     if(wContainer) renderWeatherShared(wContainer, date); 
 }
@@ -524,140 +545,151 @@ window.switchCategory = (cat) => {
 
 window.executeCreateMatch = async (dateStr, time) => {
     const cat = document.getElementById('new-match-category-val').value;
-    const minP = parseInt(document.getElementById('min-points').value) || 0;
-    const maxP = parseInt(document.getElementById('max-points').value) || 5000;
+    const minNivel = parseFloat(document.getElementById('min-points').value) || 2.0;
+    const maxNivel = parseFloat(document.getElementById('max-points').value) || 5.0;
     const fp = parseInt(document.getElementById('reto-fp')?.value || 0);
     const propuesta = document.getElementById('reto-propuesta')?.value || '';
     
     const date = new Date(dateStr);
     const invitees = selectedPlayers.filter(p => p !== usuarioActual.uid && p !== null && !p.startsWith('GUEST_'));
+    
+    // Collect guest info
+    const invitadosInfo = {};
+    selectedPlayers.forEach(p => {
+        if (p && p.startsWith('GUEST_')) {
+            invitadosInfo[p] = { nivel: guestLevels[p] || 3.0 };
+        }
+    });
+
+    const isRestricted = document.getElementById('restrict-toggle')?.checked;
 
     const payload = {
         creador: usuarioActual.uid,
         creadorNombre: userData?.nombreUsuario || 'Jugador',
         fecha: Timestamp.fromDate(date),
-        jugadores: selectedPlayers, // Keep all 4 slots (even nulls) for fixed positions
+        jugadores: selectedPlayers.filter(p => p !== null),
         invitacionesPendientes: invitees,
+        invitadosInfo: invitadosInfo,
         estado: selectedPlayers.filter(p => p !== null).length === 4 ? 'cerrado' : 'abierto',
         tipo: cat,
         familyPoints: fp,
         propuesta: propuesta,
-        restriccionPuntos: { min: minP, max: maxP },
+        restriccionNivel: isRestricted ? { min: minNivel, max: maxNivel } : null,
         creadoEn: serverTimestamp()
     };
     
     try {
-        const docRef = await addDoc(collection(db, cat === 'reto' ? 'partidosReto' : 'partidosAmistosos'), payload);
-        
-        // 1. Notify Invitees (Everyone except creator who is currently in the lineup)
-        const participantsToNotify = invitees.filter(id => !id.startsWith('GUEST_'));
-        if (participantsToNotify.length > 0) {
-            createNotification(
-                participantsToNotify, 
-                cat === 'reto' ? "NUEVO DESAFÍO" : "¡PARTIDA RESERVADA!", 
-                `${userData?.nombreUsuario || 'Un jugador'} te ha incluido en un partido el ${date.toLocaleDateString('es-ES')}`, 
-                'match_invite', 
-                'calendario.html'
-            );
+        await addDoc(collection(db, cat === 'reto' ? 'partidosReto' : 'partidosAmistosos'), payload);
+        if (invitees.length > 0) {
+            createNotification(invitees, "Te han retado", "Has recibido un desafío de " + (userData?.nombreUsuario || 'un jugador'), 'match_invite', 'calendario.html');
         }
         
-        // 2. DISCOVERY: Notify others if slot is open
-        if (payload.estado === 'abierto') {
-            const usersSnap = await getDocs(query(collection(db, "usuarios"), limit(30)));
-            const potentialUsers = [];
-            usersSnap.forEach(u => {
-                if (u.id !== usuarioActual.uid && !payload.jugadores.includes(u.id)) {
-                    potentialUsers.push(u.id);
-                }
-            });
-            if (potentialUsers.length > 0) {
-                createNotification(potentialUsers, "¡PARTIDA DISPONIBLE!", `Hay un hueco libre el ${date.toLocaleDateString('es-ES')} a las ${time}. ¡Únete!`, 'info', 'calendario.html');
-            }
+        // Notify Admins
+        const adminQ = query(collection(db, 'usuarios'), where('rol', '==', 'Admin'));
+        const adminSnaps = await getDocs(adminQ);
+        const adminIds = adminSnaps.docs.map(d => d.id).filter(id => id !== usuarioActual.uid);
+        if (adminIds.length > 0) {
+            createNotification(adminIds, "Nueva Reserva", `${userData?.nombreUsuario || 'Alguien'} ha reservado pista para el ${date.toLocaleDateString()}.`, 'info', 'calendario.html');
         }
-
         closeModal();
         await renderCalendar();
-        showToast('¡PARTIDA CREADA!', 'success');
+        showToast('¡PARTIDA CREADA!', 'Tu reserva está lista.', 'success');
     } catch (err) {
         console.error(err);
-        showToast('ERROR AL CREAR', 'danger');
+        showToast('ERROR AL CREAR', 'Inténtalo de nuevo.', 'error');
     }
 };
 
 window.openSelector = (index) => {
+    selectorContext = { mode: 'creation' };
     currentSlotIndex = index;
     const overlay = document.getElementById('user-selector-overlay');
     const results = document.getElementById('selector-results');
     overlay.classList.add('active');
     results.innerHTML = '';
 
-    const users = Object.values(allUsersMap).sort((a,b) => (b.puntosRankingTotal || 0) - (a.puntosRankingTotal || 0));
+    const users = Object.values(allUsersMap).sort((a,b) => (parseFloat(b.nivel) || 2) - (parseFloat(a.nivel) || 2));
     
-    // Add "Invitado" option
+    // Add "Invitado" option first
     const guestDiv = document.createElement('div');
     guestDiv.className = 'user-selection-card guest';
     guestDiv.innerHTML = `
+        <div class="user-avatar-pro guest-avatar"><i class="fas fa-user-plus"></i></div>
         <div class="user-info-pro">
-            <span class="user-name-pro">Invitado (GUEST)</span>
-            <span class="text-2xs opacity-50">No suma ni resta puntos</span>
+            <span class="user-name-pro">INVITADO EXTERNO</span>
+            <span class="user-sub-info">No afecta puntos ni estadísticas</span>
         </div>
-        <div class="user-avatar-pro" style="background:#555"><i class="fas fa-user-plus"></i></div>
+        <i class="fas fa-chevron-right selector-arrow"></i>
     `;
     guestDiv.onclick = () => {
         const guestName = prompt("Nombre del invitado:") || "INVITADO";
-        selectPlayer('GUEST_' + guestName, guestName);
+        const guestLvl = parseFloat(prompt("Nivel estimado (2.0 - 7.0):") || "3.0");
+        const uid = 'GUEST_' + guestName.replace(/\s+/g, '_');
+        guestLevels[uid] = guestLvl;
+        selectPlayer(uid, guestName);
     };
     results.appendChild(guestDiv);
 
     users.forEach(u => {
         if (u.id === usuarioActual.uid) return;
-        const color = u.colorRanking || '#FF6B35';
+        const nivel = parseFloat(u.nivel || 2.0).toFixed(1);
+        const puntos = Math.round(u.puntosRankingTotal || u.puntosRanking || 0);
+        const initials = (u.nombreUsuario || u.nombre || 'U').substring(0,2).toUpperCase();
+        
         const div = document.createElement('div');
         div.className = 'user-selection-card';
         div.innerHTML = `
+            <div class="user-avatar-pro" style="background: linear-gradient(135deg, #ff6b35, #ff8c5a)">${initials}</div>
             <div class="user-info-pro">
-                <span class="user-name-pro">${u.nombreUsuario || u.nombre}</span>
+                <span class="user-name-pro">${(u.nombreUsuario || u.nombre).toUpperCase()}</span>
                 <div class="user-stats-row">
-                    <span class="stat-pill">LVL ${u.nivel || '2.0'}</span>
-                    <span class="stat-pill">${Math.round(u.puntosRankingTotal || 0)} PTS</span>
+                    <span class="stat-pill level"><i class="fas fa-layer-group"></i> ${nivel}</span>
+                    <span class="stat-pill points"><i class="fas fa-star"></i> ${puntos}</span>
                 </div>
             </div>
-            <div class="user-avatar-pro" style="background:${color}; width:32px; height:32px; font-size:0.8rem">
-                ${(u.nombreUsuario || u.nombre || 'U').substring(0,2).toUpperCase()}
-            </div>
+            <i class="fas fa-chevron-right selector-arrow"></i>
         `;
         div.onclick = () => selectPlayer(u.id, u.nombreUsuario || u.nombre);
         results.appendChild(div);
     });
 };
 
-function selectPlayer(uid, name) {
-    selectedPlayers[currentSlotIndex] = uid;
-    const slot = document.getElementById(`slot-${currentSlotIndex}`);
-    if (slot) {
-        slot.innerHTML = `
-            <span class="slot-name">${name.substring(0, 10).toUpperCase()}</span>
-            <div class="slot-remove" onclick="event.stopPropagation(); clearSlot(${currentSlotIndex})">
-                <i class="fas fa-times"></i>
-            </div>
-        `;
-        slot.classList.add('filled');
-    }
-    window.closeSelector();
-}
-
-window.handleSlotClick = (index) => {
-    if (selectedPlayers[index]) return; // If filled, click does nothing (or we could re-open selector)
+window.openSelectorForMatch = (id, type, index) => {
     window.openSelector(index);
+    selectorContext = { mode: 'edit', matchId: id, type: type };
 };
 
-window.clearSlot = (index) => {
-    selectedPlayers[index] = null;
-    const slot = document.getElementById(`slot-${index}`);
-    if (slot) {
-        slot.innerHTML = `<i class="fas fa-plus opacity-50"></i>`;
-        slot.classList.remove('filled');
+async function selectPlayer(uid, name) {
+    if (selectorContext && selectorContext.mode === 'edit') {
+        const guestInfo = guestLevels[uid] ? { nivel: guestLevels[uid] } : null;
+        await executeMatchAction('addPlayer', selectorContext.matchId, selectorContext.type, {}, { uid, guestInfo }); 
+        // Note: verify executeMatchAction args order. It is (action, id, type, user, userData, extraData).
+        // My previous call in match-service was `executeMatchAction('addPlayer', id, type, current, data, {uid, ...})`.
+        // I need to proxy it carefully.
+        // Actually executeMatchAction is on window. 
+        // window.executeMatchAction(action, id, type, extraData) ?? No, window.executeMatchAction signature is (action, id, type) usually.
+        // But match-service `executeMatchAction` has more args.
+        // In calendario.js: window.executeMatchAction = async (action, id, type) => { await executeMatchActionShared(action, id, type, usuarioActual, userData); }
+        // It consumes 3 args. I need to update it to pass extraData.
+        await window.executeMatchAction('addPlayer', selectorContext.matchId, selectorContext.type, { uid, guestInfo });
+        selectorContext = null;
+        window.closeSelector();
+    } else {
+        selectedPlayers[currentSlotIndex] = uid;
+        const slot = document.getElementById(`slot-${currentSlotIndex}`);
+        if (slot) {
+            const displayName = name.length > 8 ? name.substring(0, 8) + '.' : name;
+            slot.innerHTML = `<span class="slot-name-trim">${displayName.toUpperCase()}</span>`;
+            slot.classList.add('filled');
+        }
+        window.closeSelector();
     }
+}
+
+window.toggleRestriction = () => {
+    const chk = document.getElementById('restrict-toggle');
+    const inputs = document.getElementById('restriction-inputs');
+    if(chk && inputs) inputs.style.display = chk.checked ? 'flex' : 'none';
 };
 
 window.handleSelectorSearch = (val) => {
@@ -669,8 +701,8 @@ window.handleSelectorSearch = (val) => {
     });
 };
 
-window.executeMatchAction = async (action, id, type, extra = null) => {
-    const success = await executeMatchActionShared(action, id, type, usuarioActual, userData, extra);
+window.executeMatchAction = async (action, id, type, extraData = null) => {
+    const success = await executeMatchActionShared(action, id, type, usuarioActual, userData, extraData);
     if (success) {
         if (action === 'delete') closeModal();
         else {
@@ -706,12 +738,13 @@ function showLoader(show) {
     if (o) o.style.display = show ? 'flex' : 'none'; 
 }
 
-// function showToast(msg, type='info') { ... removed ... }
+
 
 async function updateBottomWeather(date) {
     const el = document.getElementById('weather-summary-bottom');
     if (!el) return;
     try {
+        if (!date || isNaN(date.getTime())) return; // Safety check
         const formattedDate = date.toISOString().split('T')[0];
         const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=39.4938&longitude=-0.3957&daily=temperature_2m_max,temperature_2m_min&timezone=auto&start_date=${formattedDate}&end_date=${formattedDate}`);
         const data = await res.json();

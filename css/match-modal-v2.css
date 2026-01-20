@@ -1,0 +1,511 @@
+/* =====================================================
+   MATCH MODAL V2 - TENNIS COURT DESIGN
+   ===================================================== */
+
+/* Modal Container */
+.match-modal-v2 {
+  padding: 0;
+}
+
+/* Header */
+.modal-header-v2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.modal-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 25px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.modal-type-badge.reto {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 107, 53, 0.25),
+    rgba(255, 107, 53, 0.1)
+  );
+  color: #ff6b35;
+  border: 1px solid rgba(255, 107, 53, 0.4);
+}
+
+.modal-type-badge.amistoso {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 229, 255, 0.2),
+    rgba(0, 229, 255, 0.08)
+  );
+  color: #00e5ff;
+  border: 1px solid rgba(0, 229, 255, 0.35);
+}
+
+.modal-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.modal-status-badge.open {
+  background: rgba(0, 245, 160, 0.15);
+  color: #00f5a0;
+  border: 1px solid rgba(0, 245, 160, 0.3);
+}
+
+.modal-status-badge.closed {
+  background: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.modal-status-badge.played {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Date & Weather Row */
+.modal-datetime-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.modal-datetime {
+  text-align: left;
+}
+
+.modal-day {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+
+.modal-date {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.1;
+}
+
+.modal-time {
+  font-size: 0.8rem;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.modal-weather-box {
+  text-align: right;
+}
+
+.weather-mini {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.weather-mini i {
+  font-size: 1.2rem;
+}
+
+.weather-mini .rain-chance {
+  font-size: 0.7rem;
+  color: #4fc3f7;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Tennis Court Container */
+.tennis-court-container {
+  padding: 20px;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 80, 40, 0.3) 0%,
+    rgba(10, 80, 40, 0.15) 100%
+  );
+}
+
+.tennis-court {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 15px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 8px;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 49.5%,
+      rgba(255, 255, 255, 0.3) 49.5%,
+      rgba(255, 255, 255, 0.3) 50.5%,
+      transparent 50.5%
+    ),
+    linear-gradient(rgba(34, 139, 34, 0.4), rgba(20, 100, 20, 0.5));
+}
+
+.court-net {
+  position: absolute;
+  left: 50%;
+  top: 10%;
+  bottom: 10%;
+  width: 2px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.6),
+    rgba(255, 255, 255, 0.2)
+  );
+  transform: translateX(-50%);
+}
+
+.court-team {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  padding: 0 10px;
+}
+
+.court-team.team-left {
+  align-items: flex-start;
+}
+
+.court-team.team-right {
+  align-items: flex-end;
+}
+
+.court-vs {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, #ff6b35, #ff8c5a);
+  color: #fff;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 900;
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.5);
+  z-index: 10;
+}
+
+/* Court Player Slot */
+.court-player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+
+.player-avatar-slot {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #fff;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.player-avatar-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player-avatar-slot.filled {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.player-avatar-slot.empty {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px dashed rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.court-player.joinable .player-avatar-slot.empty {
+  border-color: rgba(0, 245, 160, 0.5);
+  color: rgba(0, 245, 160, 0.7);
+  cursor: pointer;
+}
+
+.court-player.joinable:hover .player-avatar-slot.empty {
+  background: rgba(0, 245, 160, 0.15);
+  border-color: #00f5a0;
+  transform: scale(1.08);
+}
+
+.player-name-slot {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+  max-width: 70px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-remove-btn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ff3366;
+  border: none;
+  color: #fff;
+  font-size: 0.6rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.court-player:hover .player-remove-btn {
+  opacity: 1;
+}
+
+/* Result Box */
+.modal-result-box {
+  text-align: center;
+  padding: 16px 20px;
+  background: rgba(0, 245, 160, 0.08);
+  border-top: 1px solid rgba(0, 245, 160, 0.2);
+  border-bottom: 1px solid rgba(0, 245, 160, 0.2);
+}
+
+.modal-result-box .result-label {
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: rgba(0, 245, 160, 0.7);
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+
+.modal-result-box .result-score {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #00f5a0;
+  letter-spacing: 4px;
+}
+
+/* Challenge Info */
+.modal-challenge-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background: rgba(255, 107, 53, 0.08);
+  border-bottom: 1px solid rgba(255, 107, 53, 0.15);
+  font-size: 0.8rem;
+  color: #ff6b35;
+}
+
+.modal-challenge-info i {
+  font-size: 1rem;
+}
+
+/* Actions V2 */
+.modal-actions-v2 {
+  padding: 16px 20px;
+}
+
+.action-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.modal-btn {
+  flex: 1;
+  min-width: 100px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.modal-btn.full {
+  flex: 1 1 100%;
+}
+
+.modal-btn.primary {
+  background: linear-gradient(135deg, #ff6b35, #ff8c5a);
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.35);
+}
+
+.modal-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(255, 107, 53, 0.45);
+}
+
+.modal-btn.success {
+  background: linear-gradient(135deg, #00f5a0, #00c97a);
+  color: #000;
+}
+
+.modal-btn.danger {
+  background: linear-gradient(135deg, #ff3366, #cc2952);
+  color: #fff;
+}
+
+.modal-btn.accent {
+  background: linear-gradient(135deg, #00e5ff, #00b8cc);
+  color: #000;
+}
+
+.modal-btn.ghost {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.modal-btn.ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.modal-btn.danger-outline {
+  background: transparent;
+  color: #ff3366;
+  border: 1px solid rgba(255, 51, 102, 0.4);
+}
+
+.modal-btn.danger-outline:hover {
+  background: rgba(255, 51, 102, 0.1);
+}
+
+/* Chat Section */
+.modal-chat-section {
+  margin: 0 20px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modal-chat-section summary {
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+}
+
+.modal-chat-section summary::-webkit-details-marker {
+  display: none;
+}
+
+.modal-chat-section[open] summary {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.chat-module-v2 {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.chat-messages-v2 {
+  height: 180px;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.chat-input-v2 {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.chat-input-v2 input {
+  flex: 1;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.chat-input-v2 input:focus {
+  border-color: var(--primary);
+}
+
+.chat-input-v2 button {
+  width: 40px;
+  height: 40px;
+  background: var(--primary);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.chat-input-v2 button:hover {
+  background: var(--primary-dark);
+  transform: scale(1.05);
+}

@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-auth.js";
-import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, getDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js";
 import { getStorage } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-storage.js";
 
 const firebaseConfig = {
@@ -16,6 +16,16 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+// Enable Offline Persistence
+enableIndexedDbPersistence(db).catch((err) => {
+    if (err.code == 'failed-precondition') {
+        console.warn('Persistence failed: Multiple tabs open.');
+    } else if (err.code == 'unimplemented') {
+        console.warn('Persistence not supported by browser.');
+    }
+});
+
 const storage = getStorage(app);
 
 // Hacer Firebase disponible globalmente

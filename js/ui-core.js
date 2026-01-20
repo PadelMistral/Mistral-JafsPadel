@@ -1,209 +1,268 @@
-import { db, auth } from './firebase-config.js';
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-auth.js";
-import { doc, getDoc, collection, query, where, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js";
+import { initializeAuthObserver, getDocument, subscribeToCollection } from './firebase-service.js';
+import { initPushNotifications, showFloatingNotification } from './push-notifications.js';
 
-/* =================================================================
-   CORE UI UTILITIES (Shared across all pages)
-   ================================================================= */
+let toastContainer = null;
 
 /**
- * Common Auth Guard for all premium pages.
+ * UI Core Module
+ * Handles shared UI elements like Header and Bottom Navigation across pages.
+ */
+
+export function initSharedUI(pageTitle) {
+    document.addEventListener('DOMContentLoaded', () => {
+        // Update Title if element exists
+        const titleEl = document.querySelector('.header-title');
+        if (titleEl) titleEl.textContent = pageTitle;
+
+        initializeAuthObserver(async (user) => {
+            if (!user) return;
+            try {
+                const userData = await getDocument('usuarios', user.uid);
+                if (userData) {
+                    updateHeader(user, userData);
+                    setupNav();
+                    listenToNotifications(user.uid);
+                    
+                    // Standardize Online Activity: Update lastActive on every page
+                    updateActivity(user.uid);
+                    
+                    // Initialize Push Notifications with permission request
+                    initPushNotifications().then(hasPermission => {
+                        if (hasPermission) {
+                            console.log('🔔 Notificaciones activas');
+                        }
+                    });
+                    
+                    // Set user data for AI Assistant
+                    if (window.padeluminatisAI) {
+                        window.padeluminatisAI.setUserData({ ...userData, uid: user.uid });
+                    }
+                }
+            } catch (error) {
+                console.error("Error initializing Shared UI:", error);
+            }
+        });
+    });
+}
+
+/**
+ * Universal Auth Guard
+ * Redirects to index.html if no user is logged in.
+ * Should be imported in all protected pages.
  */
 export function authGuard() {
-    onAuthStateChanged(auth, (user) => {
-        if (!user) {
+    initializeAuthObserver((user) => {
+        const path = window.location.pathname;
+        const isAuthPage = path.includes('index.html') || path.includes('registro.html') || path.includes('recuperar.html') || path === '/' || path === '';
+        
+        if (!user && !isAuthPage) {
             window.location.href = 'index.html';
+        } else if (user && isAuthPage) {
+            window.location.href = 'home.html';
         }
     });
 }
 
-/**
- * Toast Notifications System (Neon Style)
- */
-export function showToast(message, type = 'info') {
-    let container = document.getElementById('toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'toast-container';
-        container.style.cssText = `
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            z-index: 9999; display: flex; flex-direction: column; gap: 10px;
-            width: 90%; max-width: 400px; pointer-events: none;
-        `;
-        document.body.appendChild(container);
+function updateHeader(user, userData) {
+    const avatarContainer = document.querySelector('.user-profile-trigger');
+    if (!avatarContainer) return;
+
+    const photoUrl = userData.fotoPerfil || userData.fotoURL || user.photoURL;
+    const name = userData.nombreUsuario || userData.nombre || user.email.split('@')[0];
+
+    avatarContainer.classList.add('avatar-circle');
+    
+    if (photoUrl) {
+        avatarContainer.innerHTML = `<img src="${photoUrl}" alt="Profile" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+    } else {
+        const initials = getInitials(name);
+        const color = getVibrantColor(name);
+        avatarContainer.style.background = `linear-gradient(135deg, ${color}, ${adjustColor(color, -20)})`;
+        avatarContainer.innerHTML = `<span class="user-initials" style="color:white; font-weight:700; font-family:'Rajdhani';">${initials}</span>`;
     }
 
-    const toast = document.createElement('div');
-    toast.className = 'custom-toast animate-slide-down';
+    // Admin Link in Header (Universal)
+    // Check if there is already an admin link (e.g. static in Home)
+    const existingAdminLink = document.getElementById('admin-link') || document.getElementById('admin-link-icon');
     
-    const colors = {
-        success: '#00e676',
-        error: '#ff1744',
-        warning: '#ffc107',
-        info: '#00c3ff'
-    };
+    if (userData.esAdmin || user.email === 'Juanan221091@gmail.com') {
+        // If it exists (like in home.html), just ensure it's visible if hidden
+        if (existingAdminLink) {
+             existingAdminLink.style.display = 'flex';
+             // Force consistent icon
+             existingAdminLink.innerHTML = '<i class="fas fa-shield-alt"></i>';
+        } else {
+             // Inject if missing (for other pages)
+             const headerActions = document.querySelector('.header-right') || document.querySelector('.flex-center.gap-md');
+             if (headerActions) {
+                const adminLink = document.createElement('a');
+                adminLink.href = 'admin.html';
+                adminLink.id = 'admin-link-icon';
+                adminLink.className = 'btn-icon animate-pulse';
+                adminLink.style.color = 'var(--accent)';
+                adminLink.innerHTML = '<i class="fas fa-shield-alt"></i>';
+                headerActions.insertBefore(adminLink, headerActions.firstChild);
+             }
+        }
+    }
 
-    const icon = {
-        success: 'fa-check-circle',
-        error: 'fa-times-circle',
-        warning: 'fa-exclamation-triangle',
-        info: 'fa-info-circle'
-    };
-
-    toast.style.cssText = `
-        background: rgba(15, 15, 20, 0.9);
-        backdrop-filter: blur(10px);
-        border: 1px solid ${colors[type] || colors.info};
-        border-radius: 16px; padding: 12px 20px;
-        color: #fff; font-family: 'Rajdhani', sans-serif;
-        font-weight: 700; display: flex; align-items: center; gap: 12px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px ${(colors[type] || colors.info)}44;
-        pointer-events: auto;
-    `;
-
-    toast.innerHTML = `
-        <i class="fas ${icon[type] || icon.info}" style="color: ${colors[type] || colors.info}; font-size: 1.1rem"></i>
-        <span style="text-transform: uppercase; letter-spacing: 0.5px;">${message}</span>
-    `;
-
-    container.appendChild(toast);
-
-    // Auto remove
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(-20px) translateX(-0%)';
-        toast.style.scale = '0.9';
-        toast.style.transition = '0.5s cubic-bezier(0.19, 1, 0.22, 1)';
-        setTimeout(() => toast.remove(), 500);
-    }, 4000);
+    // Navegar al perfil al pinchar
+    avatarContainer.style.cursor = 'pointer';
+    avatarContainer.onclick = () => window.location.href = 'perfil.html';
 }
 
-/**
- * Initializes shared elements (Headers, Nav, Particles)
- */
-export function initSharedUI(pageName) {
-    console.log(`[UI] Initializing Shared Components for: ${pageName}`);
-    
-    // Auth logic & Header Sync
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            updateHeaderUI(user);
-        } else if (pageName !== 'Login' && pageName !== 'Registro') {
-            window.location.href = 'index.html';
-        }
-    });
+function getInitials(name) {
+    return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+}
 
-    // Nav active state
-    const currentPath = window.location.pathname;
+function getVibrantColor(str) {
+    const colors = ['#FF6B35', '#00C3FF', '#00E676', '#FFEA00', '#FF1744', '#7C4DFF', '#F06292', '#4DB6AC'];
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash % colors.length)];
+}
+
+function adjustColor(color, amount) {
+    return color; // Simplificado para el ejemplo
+}
+
+function setupNav() {
+    const currentPath = window.location.pathname.split('/').pop() || 'home.html';
     const navLinks = document.querySelectorAll('.nav-link, .nav-fab');
+    
     navLinks.forEach(link => {
         const href = link.getAttribute('href');
-        if (href && currentPath.includes(href)) {
+        if (href === currentPath) {
             link.classList.add('active');
         } else {
             link.classList.remove('active');
         }
     });
-
-    // Permissions & SW
-    requestNotificationPermissions();
-    registerServiceWorker();
-
-    // Global Keyframes
-    if (!document.getElementById('shared-ui-keyframes')) {
-        const s = document.createElement('style');
-        s.id = 'shared-ui-keyframes';
-        s.textContent = `
-            @keyframes slideDownToast {
-                from { transform: translateY(-40px); opacity: 0; scale: 0.8; }
-                to { transform: translateY(0); opacity: 1; scale: 1; }
-            }
-            .animate-slide-down { animation: slideDownToast 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards; }
-        `;
-        document.head.appendChild(s);
-    }
 }
 
-async function updateHeaderUI(user) {
-    const avatarContainer = document.getElementById('header-avatar-container');
-    const bell = document.querySelector('.notification-bell');
-    
-    try {
-        const snap = await getDoc(doc(db, 'usuarios', user.uid));
-        if (snap.exists()) {
-            const data = snap.data();
-            
-            // Avatar in Header
-            if (avatarContainer) {
-                avatarContainer.innerHTML = renderAvatarShared(user.uid, data, 'sm');
-                avatarContainer.style.cursor = 'pointer';
-                avatarContainer.onclick = () => window.location.href = 'perfil.html';
-            }
+function listenToNotifications(uid) {
+    const dot = document.querySelector('.notification-dot');
+    if (!dot) return;
 
-            // Sync Notification Dot
-            if (bell) {
-                const q = query(collection(db, "notificaciones"), where("uid", "==", user.uid), where("read", "==", false), limit(1));
-                onSnapshot(q, (snapshot) => {
-                    const dot = bell.querySelector('.notification-dot');
-                    if (dot) dot.style.display = snapshot.empty ? 'none' : 'block';
-                });
-            }
+    subscribeToCollection('notificaciones', (notifs) => {
+        const unreadNotifs = notifs.filter(n => !n.read);
+        const count = unreadNotifs.length;
+        
+        if (count > 0) {
+            dot.classList.add('active');
+            dot.textContent = count > 9 ? '9+' : count;
+            dot.style.display = 'flex';
+        } else {
+            dot.classList.remove('active');
+            dot.style.display = 'none';
         }
-    } catch(e) { console.error("Header Sync Error:", e); }
+    }, [['uid', '==', uid]]);
 }
 
 /**
- * Universal Avatar Renderer
+ * Shows a floating toast notification
+ * @param {string} title - The title of the toast
+ * @param {string} message - The message body
+ * @param {string} type - 'success', 'info', 'warning', 'error'
+ * @param {number} duration - Duration in ms
  */
-export function renderAvatarShared(uid, data, size = 'md') {
-    const photoUrl = data?.fotoURL || data?.fotoPerfil;
-    const name = data?.nombreUsuario || data?.nombre || 'Jugador';
-    const initial = name.charAt(0).toUpperCase();
-    const color = data?.colorRanking || getUserColor(uid);
+export function showToast(title, message, type = 'info', duration = 3000) {
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container';
+        document.body.appendChild(toastContainer);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast-notification`;
     
-    const sizeMap = {
-        'sm': '34px',
-        'md': '45px',
-        'lg': '80px',
-        'xl': '130px'
+    // Choose icon
+    let iconClass = 'fa-info-circle';
+    if (type === 'success') iconClass = 'fa-check-circle';
+    if (type === 'warning') iconClass = 'fa-exclamation-triangle';
+    if (type === 'error') iconClass = 'fa-times-circle';
+
+    // Simplified content: Icon + Title/Message combo
+    // If message is short, just show title + message inline
+    // If we want it "spectacular & animated", simpler is better
+    toast.innerHTML = `
+        <i class="fas ${iconClass}"></i>
+        <div style="display:flex; flex-direction:column;">
+             <span>${title}</span>
+             ${message && message !== title ? `<span style="font-size:0.75em; opacity:0.8; font-weight:400; text-transform:none;">${message}</span>` : ''}
+        </div>
+    `;
+
+    toastContainer.appendChild(toast);
+
+    // Remove after duration
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-20px) scale(0.9)';
+        toast.style.transition = 'all 0.4s ease';
+        setTimeout(() => toast.remove(), 400);
+    }, duration);
+}
+
+/**
+ * Smoothly animates a numeric value
+ */
+export function countUp(element, end, duration = 1500) {
+    if (!element) return;
+    let start = 0;
+    const startTime = performance.now();
+    
+    // Check if start can be parsed from current text
+    const currentText = element.textContent.replace(/[^0-9.-]/g, '');
+    if (currentText && !isNaN(currentText)) start = parseFloat(currentText);
+
+    const step = (currentTime) => {
+        const progress = Math.min((currentTime - startTime) / duration, 1);
+        const value = Math.floor(progress * (end - start) + start);
+        element.textContent = value;
+        if (progress < 1) {
+            requestAnimationFrame(step);
+        } else {
+            element.textContent = end;
+        }
     };
-    const s = sizeMap[size] || '45px';
-    const fontSize = size === 'sm' ? '0.8rem' : size === 'lg' ? '1.8rem' : size === 'xl' ? '2.8rem' : '1.1rem';
+    requestAnimationFrame(step);
+}
 
-    if (photoUrl) {
-        return `<div class="p-avatar-shared ${size}" style="width:${s}; height:${s}; border-radius:50%; overflow:hidden; border:2px solid ${color}; box-shadow: 0 0 10px ${color}44;">
-                    <img src="${photoUrl}" style="width:100%; height:100%; object-fit:cover;">
-                </div>`;
-    } else {
-        return `<div class="p-avatar-shared ${size}" style="
-                    width:${s}; height:${s}; border-radius:50%; background:${color}; 
-                    display:flex; align-items:center; justify-content:center; 
-                    color:#fff; font-weight:800; font-family:'Rajdhani', sans-serif; 
-                    font-size:${fontSize}; text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                    border: 2px solid rgba(255,255,255,0.1);
-                    box-shadow: 0 0 10px ${color}44;
-                ">${initial}</div>`;
+window.countUp = countUp;
+
+// --- DYNAMIC INJECTION OF AI & ADMIN TOOLS ---
+function injectAIAssistant() {
+    // 1. Check if AI Styles exist
+    if (!document.querySelector('link[href*="ai-assistant.css"]')) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = './css/ai-assistant.css';
+        document.head.appendChild(link);
+    }
+    
+    // 2. Check if AI Script exists
+    if (!document.querySelector('script[src*="ai-assistant.js"]')) {
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.src = './js/ai-assistant.js';
+        document.body.appendChild(script);
     }
 }
 
-function getUserColor(uid) {
-    if (!uid) return '#FF6B35';
-    const colors = ['#FF6B35', '#00C3FF', '#8A2BE2', '#00FA9A', '#FF007F', '#FFD700', '#FF4500', '#1E90FF'];
-    let hash = 0;
-    for (let i = 0; i < uid.length; i++) hash = uid.charCodeAt(i) + ((hash << 5) - hash);
-    return colors[Math.abs(hash) % colors.length];
-}
+// Inject immediately when UI Core loads
+injectAIAssistant();
 
-export async function registerServiceWorker() {
-    if ('serviceWorker' in navigator) {
-        try {
-            await navigator.serviceWorker.register('./sw.js');
-        } catch (e) {}
-    }
-}
-
-export function requestNotificationPermissions() {
-    if ('Notification' in window && Notification.permission === 'default') {
-        Notification.requestPermission();
+/**
+ * Updates the user's lastActive timestamp in Firestore.
+ */
+async function updateActivity(uid) {
+    try {
+        const { updateDocument } = await import('./firebase-service.js');
+        await updateDocument('usuarios', uid, { lastActive: new Date() });
+    } catch (e) {
+        console.warn("Activity Update Failed:", e);
     }
 }

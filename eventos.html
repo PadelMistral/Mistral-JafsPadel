@@ -3,309 +3,110 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Eventos Pro - Padeluminatis</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Eventos - Padeluminatis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Rajdhani:wght@500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Rajdhani:wght@500;600;700;800;900&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="./css/design-system-v3.css">
     <link rel="stylesheet" href="./css/app.css">
-    <link rel="stylesheet" href="./css/shared-utils.css">
+    <link rel="stylesheet" href="./css/eventos.css">
     <link rel="stylesheet" href="./css/bottom-nav.css">
-
-    <style>
-        :root {
-            --event-gold: #FFD700;
-            --event-glow: rgba(255, 215, 0, 0.3);
-        }
-
-        .event-hero {
-            position: relative;
-            height: 220px;
-            margin: 1rem;
-            border-radius: 25px;
-            overflow: hidden;
-            background: #000;
-            display: flex;
-            align-items: flex-end;
-            padding: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .hero-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, transparent 60%),
-                url('./futuristic_padel_tournament.png');
-            background-size: cover;
-            background-position: center;
-            opacity: 0.9;
-            z-index: 1;
-            transition: transform 0.8s ease;
-        }
-
-        .event-hero:hover .hero-bg {
-            transform: scale(1.05);
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 2;
-        }
-
-        .hero-title {
-            font-family: 'Rajdhani';
-            font-size: 1.8rem;
-            font-weight: 900;
-            color: #fff;
-            text-transform: uppercase;
-            line-height: 1;
-            margin-bottom: 5px;
-        }
-
-        .hero-subtitle {
-            font-size: 0.8rem;
-            color: var(--primary);
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        /* Tabs Tournament */
-        .event-tabs {
-            display: flex;
-            gap: 15px;
-            padding: 10px 1.5rem;
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-
-        .event-tabs::-webkit-scrollbar {
-            display: none;
-        }
-
-        .event-tab {
-            padding: 8px 18px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            font-family: 'Rajdhani';
-            font-weight: 700;
-            font-size: 0.85rem;
-            white-space: nowrap;
-            color: var(--text-muted);
-            transition: 0.3s;
-        }
-
-        .event-tab.active {
-            background: var(--primary);
-            color: #fff;
-            border-color: var(--primary);
-            box-shadow: 0 4px 15px var(--primary-glow);
-        }
-
-        /* Event Card Redesign */
-        .event-card-neo {
-            background: rgba(20, 22, 28, 0.6);
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            margin: 0 1rem 1.2rem;
-            padding: 20px;
-            backdrop-filter: blur(10px);
-            transition: 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .event-card-neo::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: var(--card-accent, var(--primary));
-        }
-
-        .ec-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-        }
-
-        .ec-type {
-            font-size: 0.6rem;
-            font-weight: 800;
-            letter-spacing: 1.5px;
-            color: var(--card-accent, var(--primary));
-            text-transform: uppercase;
-        }
-
-        .ec-status {
-            font-size: 0.6rem;
-            font-weight: 900;
-            padding: 3px 10px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .ec-name {
-            font-family: 'Rajdhani';
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: #fff;
-            margin-bottom: 8px;
-        }
-
-        .ec-info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 15px;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .ec-info-item i {
-            color: var(--card-accent, var(--primary));
-            margin-right: 6px;
-        }
-
-        .ec-join-area {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            padding-top: 15px;
-        }
-
-        .ec-players-bar {
-            flex: 1;
-            margin-right: 20px;
-        }
-
-        .bar-bg {
-            height: 6px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 3px;
-            overflow: hidden;
-            margin-top: 5px;
-        }
-
-        .bar-fill {
-            height: 100%;
-            background: var(--card-accent, var(--primary));
-            border-radius: 3px;
-        }
-
-        .ec-prize {
-            text-align: right;
-        }
-
-        .prize-val {
-            display: block;
-            font-family: 'Rajdhani';
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: #fff;
-            line-height: 1;
-        }
-
-        .prize-label {
-            font-size: 0.55rem;
-            font-weight: 700;
-            opacity: 0.3;
-            text-transform: uppercase;
-        }
-
-        .btn-join-neo {
-            padding: 8px 20px;
-            border-radius: 15px;
-            border: none;
-            background: var(--card-accent, var(--primary));
-            color: #fff;
-            font-family: 'Rajdhani';
-            font-weight: 800;
-            font-size: 0.85rem;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.2);
-        }
-
-        .btn-join-neo:disabled {
-            background: rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.2);
-            box-shadow: none;
-        }
-    </style>
+    <link rel="stylesheet" href="./css/match-modal-v2.css">
 </head>
 
 <body class="app-body">
-    <div id="particles-js" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></div>
-
-    <header class="app-header">
+    <header class="app-header" style="height: 55px; padding: 0 15px;">
         <div class="header-left">
-            <h1 class="header-title">
-                <span class="title-main">EVENTOS</span>
-                <span class="title-dot">.</span>
-            </h1>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <img src="./imagenes/Logojafs.png" alt="Logo"
+                    style="width: 30px; height: 30px; object-fit: cover; border-radius: 50%; filter: drop-shadow(0 0 5px rgba(255,107,53,0.5));">
+                <h1 class="header-title" style="font-size: 1.1rem;">
+                    <span class="title-main">EVENTOS</span>
+                    <span class="title-dot">.</span>
+                </h1>
+            </div>
         </div>
-        <div class="header-right">
-            <a href="notificaciones.html" class="notification-bell">
-                <i class="fas fa-bell"></i>
-                <span class="notification-dot"></span>
+        <div class="header-right" style="gap: 5px;">
+            <a href="admin.html" id="admin-link" class="admin-access-btn" style="display: none; font-size: 0.9rem;">
+                <i class="fas fa-user-shield"></i>
             </a>
-            <div id="header-avatar-container"></div>
+            <a href="notificaciones.html" class="nav-icon-btn notification-bell">
+                <i class="fas fa-bell"></i>
+                <span class="notification-dot" id="header-notif-dot" style="display:none;"></span>
+            </a>
+            <a href="perfil.html" class="user-profile-trigger-link">
+                <div class="user-profile-trigger" style="width: 32px; height: 32px;">
+                    <div class="spinner-small" style="width: 15px; height: 15px; border-width: 2px;"></div>
+                </div>
+            </a>
         </div>
     </header>
 
-    <main class="container animate-fade-in" style="padding: 0; padding-bottom: 120px;">
+    <main class="main-scroll-container">
+        <div class="container pb-bottom-nav">
+            <div class="flex-between mb-2">
+                <h2 style="margin: 0; font-size: 1.1rem; font-family: 'Rajdhani'; font-weight: 800;"><i
+                        class="fas fa-star text-primary"></i> PRÓXIMOS EVENTOS</h2>
+                <button id="createEventBtn" class="btn btn-primary btn-sm" style="display: none;">
+                    <i class="fas fa-plus"></i> Crear
+                </button>
+            </div>
 
-        <!-- Hero Featured -->
-        <div class="event-hero">
-            <div class="hero-bg"></div>
-            <div class="hero-content">
-                <span class="hero-subtitle">Temporada 2026</span>
-                <h2 class="hero-title">MISTRAL HOMES EVENTOS Y TORNEOS</h2>
-                <div class="flex-center gap-2 mt-2">
-                    <span class="badge-pro" style="background:#FFD700; color:#000">ENTRADA LIBRE</span>
-                    <span class="text-xs text-white opacity-70">Únete a la élite de Benicalap</span>
+            <div class="card filters-container glass-strong mb-4" style="padding: 1rem; border-radius: 20px;">
+                <div class="form-group mb-2">
+                    <label class="filter-label">TIPO</label>
+                    <select class="form-select-premium" id="filterType">
+                        <option value="all">TODOS</option>
+                        <option value="tournament">TORNEO</option>
+                        <option value="league">LIGA</option>
+                        <option value="mixed">MIXTO</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-secondary w-full" id="applyFilters"
+                    style="border-radius: 12px; font-weight: 800; font-family: 'Rajdhani';">
+                    <i class="fas fa-filter"></i> FILTRAR
+                </button>
+            </div>
+
+            <div class="events-container" id="eventsList">
+                <div class="loader-ring-container">
+                    <div class="spinner-small"></div>
                 </div>
             </div>
         </div>
-
-        <!-- Filters Tabs -->
-        <div class="event-tabs">
-            <button class="event-tab active" data-type="all">TODOS</button>
-            <button class="event-tab" data-type="tournament">TORNEOS</button>
-            <button class="event-tab" data-type="league">LIGAS</button>
-            <button class="event-tab" data-type="special">ESPECIALES</button>
-        </div>
-
-        <!-- Active Events List -->
-        <div id="events-list-pro" style="margin-top: 1rem;">
-            <div class="loader-ring-container py-5">
-                <div class="loader-ring"></div>
-            </div>
-        </div>
-
     </main>
 
-    <nav class="bottom-nav glass">
-        <a href="home.html" class="nav-link"><i class="fas fa-home"></i><span>Inicio</span></a>
-        <a href="calendario.html" class="nav-link"><i class="fas fa-calendar-alt"></i><span>Reserva</span></a>
-        <a href="puntosRanking.html" class="nav-fab"><i class="fas fa-trophy"></i></a>
-        <a href="eventos.html" class="nav-link active"><i class="fas fa-medal"></i><span>Eventos</span></a>
-        <a href="partidos.html" class="nav-link"><i class="fas fa-clipboard-list"></i><span>Partidos</span></a>
+    <nav class="bottom-nav">
+        <a href="home.html" class="nav-link">
+            <i class="fas fa-home"></i>
+            <span>INICIO</span>
+        </a>
+        <a href="calendario.html" class="nav-link">
+            <i class="fas fa-calendar-alt"></i>
+            <span>PISTAS</span>
+        </a>
+        <a href="home.html" class="nav-fab">
+            <div class="fab-inner">
+                <img src="./imagenes/Logojafs.png" alt="O" style="width:24px; height:24px; border-radius:50%">
+            </div>
+        </a>
+        <a href="eventos.html" class="nav-link">
+            <i class="fas fa-bolt"></i>
+            <span>EVENTOS</span>
+        </a>
+        <a href="partidos.html" class="nav-link">
+            <i class="fas fa-table-tennis"></i>
+            <span>PARTIDOS</span>
+        </a>
     </nav>
 
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-    <script type="module" src="./js/particles-init.js"></script>
+    <script type="module">
+        import { initSharedUI } from './js/ui-core.js';
+        initSharedUI('Eventos');
+    </script>
     <script type="module" src="./js/eventos.js"></script>
 </body>
 

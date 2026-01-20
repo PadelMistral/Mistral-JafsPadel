@@ -1,61 +1,92 @@
-// sw.js
-// Centralized Push Notifications handler for Padeluminatis
+/**
+ * Padeluminatis Service Worker
+ * Handles push notifications and offline caching
+ */
 
+const CACHE_NAME = 'padeluminatis-v2';
+const ASSETS_TO_CACHE = [
+    '/',
+    '/index.html',
+    '/home.html',
+    '/calendario.html',
+    '/imagenes/Logojafs.png',
+    '/css/app.css',
+    '/css/shared-utils.css'
+];
+
+// Install
 self.addEventListener('install', (event) => {
-    console.log('[SW] Installed');
+    event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
+    );
     self.skipWaiting();
 });
 
+// Activate
 self.addEventListener('activate', (event) => {
-    console.log('[SW] Activated');
+    event.waitUntil(
+        caches.keys().then((keys) => Promise.all(
+            keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+        ))
+    );
+    self.clients.claim();
 });
 
-// Listen for Push events from Backend (FCM/WebPush)
-self.addEventListener('push', (event) => {
-    let data = {};
-    if (event.data) {
-        try {
-            data = event.data.json();
-        } catch(e) {
-            data = { title: 'Padeluminatis', message: event.data.text() };
-        }
-    }
+// Fetch (Network first, fallback to cache)
+self.addEventListener('fetch', (event) => {
+    if (event.request.method !== 'GET') return;
+    
+    event.respondWith(
+        fetch(event.request)
+            .then((response) => {
+                const clone = response.clone();
+                caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+                return response;
+            })
+            .catch(() => caches.match(event.request))
+    );
+});
 
-    const title = data.title || '🎾 Padeluminatis';
+// Push Notification (from server)
+self.addEventListener('push', (event) => {
+    const data = event.data?.json() || { title: 'Padeluminatis', body: 'Nueva notificación' };
+    
     const options = {
-        body: data.message || 'Tienes una nueva notificación.',
-        icon: './imagenes/Logojafs.png',
-        badge: './imagenes/Logojafs.png',
+        body: data.body,
+        icon: '/imagenes/Logojafs.png',
+        badge: '/imagenes/Logojafs.png',
         vibrate: [100, 50, 100],
-        data: {
-            url: data.link || './notificaciones.html'
-        },
-        actions: [
-            { action: 'open', title: 'Ver ahora', icon: './imagenes/Logojafs.png' }
-        ]
+        data: data.data || {},
+        actions: data.actions || []
     };
 
-    event.waitUntil(self.registration.showNotification(title, options));
+    event.waitUntil(
+        self.registration.showNotification(data.title, options)
+    );
 });
 
-// Handle Notification Clicks
+// Message from main app
+self.addEventListener('message', (event) => {
+    if (event.data.type === 'SHOW_NOTIFICATION') {
+        self.registration.showNotification(event.data.title, event.data.options);
+    }
+});
+
+// Notification click
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
     
+    const urlToOpen = event.notification.data?.url || '/home.html';
+    
     event.waitUntil(
-        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
-            const url = event.notification.data.url;
-            
-            // If horizontal tab is open, focus it
+        clients.matchAll({ type: 'window' }).then((clientList) => {
             for (const client of clientList) {
-                if (client.url.includes(url) && 'focus' in client) {
+                if (client.url.includes('padeluminatis') && 'focus' in client) {
                     return client.focus();
                 }
             }
-            
-            // Otherwise open a new tab
             if (clients.openWindow) {
-                return clients.openWindow(url);
+                return clients.openWindow(urlToOpen);
             }
         })
     );

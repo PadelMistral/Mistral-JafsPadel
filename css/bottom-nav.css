@@ -1,22 +1,27 @@
-/* ============================================
-   BOTTOM NAVIGATION - Premium Edition
-   ============================================ */
+/* --- Bottom Navigation: Ultra-Premium Mobile Edition --- */
 .bottom-nav {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background: rgba(8, 10, 15, 0.98);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid var(--border-bright);
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92%;
+  max-width: 480px;
+  height: 62px;
+  background: rgba(13, 16, 24, 0.88) !important;
+  backdrop-filter: blur(25px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 40px !important;
   display: flex;
-  justify-content: space-around;
+  justify-content: space-evenly;
   align-items: center;
-  padding: 10px 0;
-  z-index: 1000;
-  padding-bottom: env(safe-area-inset-bottom, 10px);
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  padding: 0 15px;
+  z-index: 9000;
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  overflow: visible;
 }
 
 .nav-link {
@@ -24,161 +29,158 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--text-muted);
-  font-size: 10px;
-  font-weight: 600;
-  gap: 4px;
-  padding: 8px 12px;
-  border-radius: 14px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  width: 64px;
-  position: relative;
+  color: rgba(255, 255, 255, 0.4);
   text-decoration: none;
-  cursor: pointer;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  font-family: "Rajdhani";
+  font-size: 0.6rem;
+  font-weight: 800;
+  gap: 2px;
+  width: 60px;
+  height: 100%;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  position: relative;
+  z-index: 1;
 }
 
 .nav-link i {
-  font-size: 22px;
-  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  font-size: 19px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Hover Effect */
-.nav-link:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-secondary);
-  transform: translateY(-2px);
+.nav-link span {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+  transform: scale(0.9);
 }
 
-.nav-link:hover i {
-  transform: scale(1.1);
-}
-
-/* Active State */
+/* --- Active State: The "Elevated" look --- */
 .nav-link.active {
-  color: var(--primary);
-  background: rgba(255, 107, 53, 0.1);
+  color: #fff;
 }
 
 .nav-link.active i {
-  transform: translateY(-3px) scale(1.05);
-  filter: drop-shadow(0 4px 8px var(--primary-glow));
+  color: var(--primary);
+  transform: translateY(-8px);
+  filter: drop-shadow(0 0 12px var(--primary-glow));
 }
 
-.nav-link.active::before {
+.nav-link.active span {
+  opacity: 1;
+  transform: scale(1.1);
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+/* The indicator dot with orbital animation */
+.nav-link.active::after {
   content: "";
   position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 30px;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, var(--primary), transparent);
-  border-radius: 0 0 3px 3px;
-  animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-}
-
-/* FAB Button (Trophy) */
-.nav-fab {
-  width: 58px;
-  height: 58px;
-  background: linear-gradient(
-    135deg,
-    var(--primary) 0%,
-    var(--primary-dark) 100%
-  );
+  bottom: 8px;
+  width: 4px;
+  height: 4px;
+  background: var(--primary);
   border-radius: 50%;
+  box-shadow: 0 0 10px var(--primary);
+  animation: navPulse 3s ease-in-out infinite;
+}
+
+@keyframes navPulse {
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(1.5);
+    filter: brightness(1.5);
+  }
+}
+
+/* --- Featured Center FAB: The Crown Jewel --- */
+.nav-fab {
+  width: 62px;
+  height: 62px;
+  background: linear-gradient(135deg, var(--primary), #ff4500);
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-size: 26px;
-  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.5), 0 0 0 4px var(--bg-body),
-    0 0 0 6px rgba(255, 107, 53, 0.2);
-  transform: translateY(-24px);
-  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  box-shadow:
+    0 10px 25px rgba(255, 107, 53, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  transform: translateY(-30px) rotate(45deg);
+  border: 4px solid #0a0b10;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
+  z-index: 2;
   text-decoration: none;
-  cursor: pointer;
 }
 
-.nav-fab::before {
-  content: "";
-  position: absolute;
-  inset: -4px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary), var(--accent));
-  opacity: 0;
-  transition: opacity 0.3s;
-  z-index: -1;
-}
-
-.nav-fab:hover {
-  transform: translateY(-28px) scale(1.05);
-  box-shadow: 0 8px 30px rgba(255, 107, 53, 0.6), 0 0 0 4px var(--bg-body),
-    0 0 0 6px rgba(255, 107, 53, 0.3);
-}
-
-.nav-fab:hover::before {
-  opacity: 0.3;
-  animation: pulse 2s infinite;
+.nav-fab i {
+  transform: rotate(-45deg);
+  transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .nav-fab.active {
   background: linear-gradient(
     135deg,
-    var(--accent) 0%,
-    var(--accent-dark) 100%
+    #ffd700,
+    #ffa500
+  ); /* Golden state for active ranking */
+  box-shadow: 0 0 35px rgba(255, 215, 0, 0.3);
+  transform: translateY(-35px) rotate(225deg);
+}
+
+.nav-fab.active i {
+  transform: rotate(-225deg);
+  color: #000;
+}
+
+.nav-fab:hover {
+  transform: translateY(-35px) rotate(45deg) scale(1.08);
+  filter: brightness(1.1);
+}
+
+.nav-fab:active {
+  transform: translateY(-30px) rotate(45deg) scale(0.9);
+}
+
+/* Organic background glow for the active item */
+.nav-link.active::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 107, 53, 0.15) 0%,
+    transparent 70%
   );
-  box-shadow: 0 6px 20px rgba(0, 212, 255, 0.5), 0 0 0 4px var(--bg-body),
-    0 0 0 6px rgba(0, 212, 255, 0.2);
+  border-radius: 50%;
+  z-index: -1;
+  animation: glowOrbit 4s linear infinite;
 }
 
-.nav-fab:active {
-  transform: translateY(-22px) scale(0.95);
-}
-
-/* Ripple Effect on Click */
-.nav-link:active,
-.nav-fab:active {
-  position: relative;
-  overflow: hidden;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 480px) {
-  .nav-link {
-    width: 56px;
-    font-size: 9px;
-    padding: 6px 8px;
+@keyframes glowOrbit {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.5;
   }
-
-  .nav-link i {
-    font-size: 20px;
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0.8;
   }
-
-  .nav-fab {
-    width: 54px;
-    height: 54px;
-    font-size: 24px;
-  }
-}
-
-/* Safe Area for Notch Devices */
-@supports (padding: max(0px)) {
-  .bottom-nav {
-    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.5;
   }
 }

@@ -8,8 +8,7 @@
     <title>Chat Grupal - Padeluminatis</title>
     <link rel="icon" type="image/x-icon" href="./imagenes/Logojafs.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Rajdhani:wght@500;600;700;800&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="./css/app.css">
     <link rel="stylesheet" href="./css/shared-utils.css">
@@ -41,19 +40,15 @@
 
         .message.sent {
             align-self: flex-end;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            background: var(--primary);
             color: white;
             border-bottom-right-radius: 2px;
-            box-shadow: var(--shadow-sm);
         }
 
         .message.received {
             align-self: flex-start;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(5px);
-            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.1);
             border-bottom-left-radius: 2px;
-            color: var(--text-main);
         }
 
         .message-user {
@@ -62,7 +57,6 @@
             margin-bottom: 0.25rem;
             display: block;
             opacity: 0.8;
-            letter-spacing: 0.5px;
         }
 
         .message-time {
@@ -85,24 +79,19 @@
             flex: 1;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border);
-            border-radius: var(--radius-full);
-            padding: 0.75rem 1.2rem;
+            border-radius: var(--radius-md);
+            padding: 0.75rem;
             color: white;
             outline: none;
-            transition: var(--transition);
         }
 
         #messageInput:focus {
             border-color: var(--primary);
-            background: rgba(255, 255, 255, 0.08);
-            box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.1);
         }
     </style>
 </head>
 
 <body class="app-body">
-    <div id="particles-js" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></div>
-
     <header class="app-header">
         <div class="header-left">
             <h1 class="header-title">Chat Grupal</h1>
@@ -121,12 +110,11 @@
     <main class="container chat-main"
         style="height: calc(100vh - 160px); display: flex; flex-direction: column; padding: 0;">
         <div class="chat-header-info glass"
-            style="padding: 10px 20px; border-radius: 0 0 var(--radius-lg) var(--radius-lg); display: flex; align-items: center; gap: 10px; border-top: none; margin-bottom: 10px;">
+            style="padding: 10px 20px; border-radius: 0 0 var(--radius-lg) var(--radius-lg); display: flex; align-items: center; gap: 10px; border-top: none;">
             <div
                 style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; box-shadow: 0 0 10px var(--success);">
             </div>
-            <span
-                style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); letter-spacing: 1px;">HERMANDAD
+            <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">COMUNIDAD
                 PADELUMINATIS</span>
         </div>
 
@@ -135,19 +123,19 @@
             <!-- Messages -->
             <div class="spinner-container"
                 style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                <div class="loading-spinner"></div>
+                <div class="spinner"></div>
             </div>
         </div>
 
         <div class="chat-input-wrapper glass-strong"
-            style="padding: 15px; border-radius: var(--radius-xl) var(--radius-xl) 0 0; margin-top: auto; border: 1px solid var(--border-bright); border-bottom: none;">
+            style="padding: 15px; border-radius: var(--radius-xl) var(--radius-xl) 0 0; margin-top: auto;">
             <form id="chatForm" style="display: flex; gap: 10px; align-items: center;">
                 <div style="flex: 1; position: relative;">
                     <input type="text" id="messageInput" placeholder="Escribe a la hermandad..."
-                        style="width: 100%; background: var(--bg-surface-2); border: 1px solid var(--border); border-radius: var(--radius-full); padding: 12px 20px; color: #fff; outline: none; transition: var(--transition);">
+                        style="width: 100%; background: var(--bg-surface-2); border: 1px solid var(--border-bright); border-radius: var(--radius-full); padding: 12px 20px; color: #fff; outline: none; transition: var(--transition);">
                 </div>
                 <button type="submit" class="btn-icon"
-                    style="width: 45px; height: 45px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; border-radius: 50%; box-shadow: var(--shadow-primary); display: flex; align-items: center; justify-content: center; border: none;">
+                    style="width: 45px; height: 45px; background: var(--primary); color: #fff; border-radius: 50%; box-shadow: var(--shadow-primary); display: flex; align-items: center; justify-content: center;">
                     <i class="fas fa-paper-plane" style="font-size: 1rem;"></i>
                 </button>
             </form>

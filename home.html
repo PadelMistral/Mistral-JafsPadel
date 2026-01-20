@@ -5,197 +5,250 @@
     <meta charset="UTF-8" />
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#030508">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="description" content="Padeluminatis - Tu nexo galáctico del pádel. Ranking, reservas y torneos.">
     <title>Dashboard - Padeluminatis</title>
     <link rel="shortcut icon" href="./imagenes/Logojafs.png" type="image/x-icon">
+    <link rel="apple-touch-icon" href="./imagenes/Logojafs.png">
+    <link rel="manifest" href="./manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Rajdhani:wght@500;600;700;800&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="./css/design-system-v3.css" />
     <link rel="stylesheet" href="./css/app.css" />
     <link rel="stylesheet" href="./css/shared-utils.css" />
     <link rel="stylesheet" href="./css/bottom-nav.css" />
     <link rel="stylesheet" href="./css/home-premium.css" />
     <link rel="stylesheet" href="./css/home-premium-extended.css" />
+    <link rel="stylesheet" href="./css/match-modal-v2.css" />
+    <!-- Chart.js for ELO Graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body class="app-body">
-    <header class="app-header">
+    <header class="app-header" style="height: 55px; padding: 0 15px;">
         <div class="header-left">
-            <h1 class="header-title">
-                <span class="title-main">HOME</span>
-                <span class="title-dot">.</span>
-            </h1>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <img src="./imagenes/Logojafs.png" alt="Logo"
+                    style="width: 30px; height: 30px; object-fit: cover; border-radius: 50%; filter: drop-shadow(0 0 5px rgba(255,107,53,0.5));">
+                <h1 class="header-title" style="font-size: 1.1rem;">
+                    <span class="title-main">HOME</span>
+                    <span class="title-dot">.</span>
+                </h1>
+            </div>
         </div>
-        <div class="header-right">
-            <a href="notificaciones.html" class="notification-bell">
-                <i class="fas fa-bell"></i>
-                <span class="notification-dot"></span>
+        <div class="header-right" style="gap: 5px;">
+            <a href="admin.html" id="admin-link" class="admin-access-btn" style="display: none; font-size: 0.9rem;">
+                <i class="fas fa-user-shield"></i>
             </a>
-            <div id="header-avatar-container"></div>
+            <a href="notificaciones.html" class="nav-icon-btn notification-bell">
+                <i class="fas fa-bell"></i>
+                <span class="notification-dot" id="header-notif-dot" style="display:none;"></span>
+            </a>
+            <a href="perfil.html" class="user-profile-trigger-link">
+                <div class="user-profile-trigger" style="width: 32px; height: 32px;">
+                    <div class="spinner-small" style="width: 15px; height: 15px; border-width: 2px;"></div>
+                </div>
+            </a>
         </div>
     </header>
 
-    <main class="container">
-        <!-- Welcome Section -->
-        <div class="welcome-section glass-strong mb-3 animate-fade-in">
-            <div class="welcome-content">
-                <div class="welcome-text-info">
-                    <span class="greeting-text">BIENVENIDO DE NUEVO</span>
-                    <a href="perfil.html" style="text-decoration: none; color: inherit;">
-                        <h2 id="username" class="user-name-display">CARGANDO...</h2>
-                    </a>
-                    <div class="user-badge-premium" id="user-pos-badge">
-                        <i class="fas fa-location-arrow text-primary"></i>
-                        <span id="p-val-pos">CARGANDO...</span>
+    <main class="main-scroll-container">
+        <div class="container pb-bottom-nav">
+            <!-- Notification Prompt (Hidden by default) -->
+            <div id="notification-prompt" style="display: none;"></div>
+
+            <!-- Welcome Section with Integrated AI - Compact Edition -->
+            <div class="welcome-section-v4 glass-strong mb-3 animate-fade-in"
+                style="background: linear-gradient(135deg, rgba(138,43,226,0.12) 0%, rgba(10,11,16,0.95) 100%) !important; border: 1px solid rgba(255,255,255,0.05);">
+
+                <!-- Top: User Info Compact -->
+                <div class="welcome-content-v4">
+                    <div class="welcome-info-left">
+                        <span class="greeting-compact" id="greeting-text">...</span>
+                        <h2 id="username" class="username-v4">...</h2>
+                    </div>
+                    <div class="welcome-info-right">
+                        <div id="user-rank-status" class="rank-badge-v4">
+                            <i class="fas fa-star text-primary"></i>
+                            <span>...</span>
+                        </div>
                     </div>
                 </div>
-                <a href="perfil.html" class="welcome-avatar-link">
-                    <div id="welcome-avatar" class="avatar-premium-large">
+
+                <!-- Middle: Micro Stats Compact -->
+                <div class="stats-bar-v4">
+                    <div class="m-stat-v4">
+                        <span class="v4-val" id="home-rank-pos">#--</span>
+                        <span class="v4-lab">POS</span>
+                    </div>
+                    <div class="m-stat-v4">
+                        <span class="v4-val" id="stat-fp-welcome">0</span>
+                        <span class="v4-lab">F-PTS</span>
+                    </div>
+                    <div class="m-stat-v4">
+                        <span class="v4-val" id="home-matches-week">0</span>
+                        <span class="v4-lab">MES</span>
+                    </div>
+                    <div class="m-stat-v4">
+                        <span class="v4-val" id="home-win-streak">0</span>
+                        <span class="v4-lab">RACHA</span>
+                    </div>
+                    <div class="m-stat-v4">
+                        <span class="v4-val" id="stat-nivel-display">0.0</span>
+                        <span class="v4-lab">NIVEL</span>
+                    </div>
+                </div>
+
+                <!-- AI Quick Access -->
+                <div class="ai-compact-v4" onclick="if(window.padeluminatisAI) window.padeluminatisAI.toggleChat()">
+                    <div class="ai-eye">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="ai-text-v4">
+                        <p id="ai-suggestion-text">¿En qué puedo ayudarte hoy?</p>
+                    </div>
+                    <i class="fas fa-chevron-right ml-auto opacity-30"></i>
+                </div>
+
+                <!-- Online Users Widget -->
+                <div id="online-users-bar" class="mt-3 px-2 flex-between" style="opacity: 0.8;">
+                    <div class="flex-center gap-2">
+                        <div class="pulse-dot-green"></div>
+                        <span
+                            style="font-size: 0.65rem; font-weight: 800; color: var(--success); letter-spacing: 0.5px;">CONEXIÓN
+                            ACTIVA</span>
+                    </div>
+                    <div id="online-count-display"
+                        style="font-size: 0.65rem; font-weight: 800; color: #fff; background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 10px;">
+                        -- Jugadores
+                    </div>
+                </div>
+            </div>
+
+            <!-- Featured Section: Next Match Carousel -->
+            <section class="mb-4">
+                <div class="section-header-premium mb-2">
+                    <h3 class="premium-title"><i class="fas fa-bolt"></i> PRÓXIMOS PARTIDOS</h3>
+                    <div class="carousel-nav" id="nm-carousel-nav" style="display:none;">
+                        <button class="c-nav-btn" id="nm-prev"><i class="fas fa-chevron-left"></i></button>
+                        <span class="c-nav-indicator" id="nm-indicator">1/3</span>
+                        <button class="c-nav-btn" id="nm-next"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                <div id="next-match-container">
+                    <div class="loader-ring-container">
                         <div class="spinner-small"></div>
                     </div>
-                </a>
-            </div>
+                </div>
+            </section>
 
-            <!-- Quick Micro Stats Bar -->
-            <div class="micro-stats-bar">
-                <div class="micro-stat">
-                    <span class="ms-value" id="stat-puntos-real">0</span>
-                    <span class="ms-label">PUNTOS RANKING</span>
+
+            <!-- Advanced Match Library - Always Open -->
+            <section class="mb-5">
+                <div class="library-header-premium flex-between mb-3">
+                    <h2 class="section-title-v4"><i class="fas fa-layer-group text-primary"></i> BIBLIOTECA</h2>
+                    <button class="btn-icon-glass" onclick="window.resetHomeFilters()" title="Reiniciar filtros">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
                 </div>
-                <div class="divider"></div>
-                <div class="micro-stat">
-                    <span class="ms-value" id="stats-winrate-real">0%</span>
-                    <span class="ms-label">WINRATE</span>
+
+                <div class="card glass-strong p-3 mb-4 animate-fade-in" id="library-filters"
+                    style="border-radius: 24px;">
+                    <!-- Better Filter Controls -->
+                    <div class="filter-row mb-3">
+                        <div class="filter-group">
+                            <span class="filter-label-v4">DÍA</span>
+                            <div class="filter-scroll-container" id="filters-date-container">
+                                <button class="filter-pill active" onclick="setHomeFilter('date', 'all', this)">📅
+                                    Todas</button>
+                                <button class="filter-pill" onclick="setHomeFilter('date', 'today', this)">Hoy</button>
+                                <button class="filter-pill"
+                                    onclick="setHomeFilter('date', 'tomorrow', this)">Mañana</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <span class="filter-label-v4">TIPO DE PARTIDA</span>
+                            <div class="filter-scroll-container" id="filters-status-container">
+                                <button class="filter-pill active" onclick="setHomeFilter('status', 'abierto', this)">🎾
+                                    Abiertas</button>
+                                <button class="filter-pill" onclick="setHomeFilter('status', 'played', this)">🏁
+                                    Historial</button>
+                                <button class="filter-pill" onclick="setHomeFilter('type', 'reto', this)">🏆
+                                    Retos</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="divider"></div>
-                <div class="micro-stat">
-                    <span class="ms-value" id="stat-nivel-display">0.0</span>
-                    <span class="ms-label">NIVEL</span>
+
+                <div id="pending-matches-list" class="matches-grid-compact">
+                    <!-- Matches injected here -->
+                    <div class="loader-ring-container py-5">
+                        <div class="spinner-small"></div>
+                    </div>
                 </div>
-            </div>
+            </section>
         </div>
-
-        <!-- Main Action Cards (Stats) -->
-        <section class="mb-4">
-            <div class="premium-stats-grid">
-                <div class="premium-stat-card primary">
-                    <div class="card-icon"><i class="fas fa-ranking-star"></i></div>
-                    <div class="card-info">
-                        <span id="home-rank-pos" class="card-value">#--</span>
-                        <span class="card-label">RANKING</span>
-                    </div>
-                    <div class="card-progress"></div>
-                </div>
-                <div class="premium-stat-card accent">
-                    <div class="card-icon"><i class="fas fa-coins"></i></div>
-                    <div class="card-info">
-                        <span id="home-fp-total" class="card-value">0</span>
-                        <span class="card-label">FAMILY POINTS</span>
-                    </div>
-                    <div class="card-progress"></div>
-                </div>
-                <div class="premium-stat-card success">
-                    <div class="card-icon"><i class="fas fa-calendar-check"></i></div>
-                    <div class="card-info">
-                        <span id="home-matches-week" class="card-value">0</span>
-                        <span class="card-label">PARTIDOS / MES</span>
-                    </div>
-                    <div class="card-progress"></div>
-                </div>
-                <div class="premium-stat-card danger">
-                    <div class="card-icon"><i class="fas fa-fire-flame-curved"></i></div>
-                    <div class="card-info">
-                        <span id="home-win-streak" class="card-value">0</span>
-                        <span class="card-label">RACHA ACTUAL</span>
-                    </div>
-                    <div class="card-progress"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Featured Section: Next Match -->
-        <section class="mb-4">
-            <div class="section-header-premium mb-2">
-                <h3 class="premium-title"><i class="fas fa-bolt"></i> PRÓXIMO PARTIDO</h3>
-                <a href="calendario.html" class="view-all-link">VER CALENDARIO</a>
-            </div>
-            <div id="next-match-container">
-                <div class="empty-next-match">
-                    <div class="loader-ring"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Data Overview Cards -->
-
-
-        <!-- Match Tabs / Discovery -->
-        <section class="mb-4">
-            <div class="tabs-header mb-2">
-                <div class="tab-title-group">
-                    <h3 class="premium-title"><i class="fas fa-calendar-alt"></i> EXPLORAR PARTIDOS</h3>
-                    <p class="tab-subtitle">Únete a nuevos encuentros o revisa los tuyos</p>
-                </div>
-                <div class="toggle-container-premium" id="match-filter-toggle">
-                    <div class="toggle-btn-premium active" data-filter="mis">
-                        <i class="fas fa-user-check"></i> MIS PARTIDOS
-                    </div>
-                    <div class="toggle-btn-premium" data-filter="jugados">
-                        <i class="fas fa-history"></i> JUGADOS
-                    </div>
-                    <div class="toggle-btn-premium" data-filter="todos">
-                        <i class="fas fa-globe"></i> TODOS
-                    </div>
-                </div>
-            </div>
-
-            <div id="pending-matches-list" class="matches-scroll-container">
-                <div class="loader-ring-container py-4">
-                    <div class="loader-ring"></div>
-                </div>
-            </div>
-        </section>
     </main>
 
     <!-- Bottom Navigation -->
-    <nav class="bottom-nav glass">
+    <nav class="bottom-nav">
         <a href="home.html" class="nav-link active">
             <i class="fas fa-home"></i>
-            <span>Inicio</span>
+            <span>INICIO</span>
         </a>
         <a href="calendario.html" class="nav-link">
             <i class="fas fa-calendar-alt"></i>
-            <span>Reserva</span>
+            <span>PISTAS</span>
         </a>
-        <a href="puntosRanking.html" class="nav-fab">
-            <i class="fas fa-trophy"></i>
+        <a href="home.html" class="nav-fab">
+            <div class="fab-inner">
+                <img src="./imagenes/Logojafs.png" alt="O" style="width:24px; height:24px; border-radius:50%">
+            </div>
         </a>
         <a href="eventos.html" class="nav-link">
-            <i class="fas fa-medal"></i>
-            <span>Eventos</span>
+            <i class="fas fa-bolt"></i>
+            <span>EVENTOS</span>
         </a>
         <a href="partidos.html" class="nav-link">
-            <i class="fas fa-clipboard-list"></i>
-            <span>Partidos</span>
+            <i class="fas fa-table-tennis"></i>
+            <span>PARTIDOS</span>
         </a>
     </nav>
 
     <!-- Universal Match Modal -->
     <div id="modal-partido-universal" class="modal-overlay">
-        <div class="modal-card">
+        <div class="modal-card glass-strong slide-up">
             <div class="modal-header">
-                <h3 class="modal-title" id="modal-titulo">CARGANDO...</h3>
+                <h3 class="modal-title" id="modal-titulo">DETALLES</h3>
                 <button class="close-btn" onclick="closeMatchModal()">&times;</button>
             </div>
-            <div class="modal-body" id="modal-cuerpo">
+            <div class="modal-body scroll-y" id="modal-cuerpo" style="max-height: 80vh;">
                 <!-- Dynamic Content -->
             </div>
         </div>
     </div>
 
+    <!-- Init AI Chat -->
+    <script type="module" src="./js/ai-assistant.js"></script>
+
     <script type="module">
         import { initSharedUI } from './js/ui-core.js';
-        initSharedUI('HOME');
+        initSharedUI('INICIO');
+
+        // Simple Reset Function (Global)
+        window.resetHomeFilters = () => {
+            document.querySelectorAll('#library-filters select').forEach(s => s.selectedIndex = 0);
+            // Trigger change event if needed for logic to pick it up
+            document.getElementById('filter-date').dispatchEvent(new Event('change'));
+        }
     </script>
     <!-- Scripts -->
     <script src="./js/menu-hamburguesa.js"></script>

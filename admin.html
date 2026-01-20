@@ -5,334 +5,301 @@
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Panel de Administración - Padeluminatis</title>
+  <meta name="theme-color" content="#050709">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Admin Panel - Padeluminatis</title>
   <link rel="icon" type="image/x-icon" href="./imagenes/Logojafs.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link
-    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Rajdhani:wght@500;600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@600;700;800;900&display=swap"
     rel="stylesheet">
+  <link rel="stylesheet" href="./css/design-system-v3.css">
   <link rel="stylesheet" href="./css/app.css">
   <link rel="stylesheet" href="./css/admin.css">
-  <link rel="stylesheet" href="./css/modals.css">
   <link rel="stylesheet" href="./css/bottom-nav.css">
+  <link rel="stylesheet" href="./css/match-modal-v2.css">
 </head>
 
-<body class="app-body">
-  <!-- Header -->
-  <header class="app-header">
-    <div class="flex-center gap-sm">
-      <img src="./imagenes/Logojafs.png" alt="Logo" class="header-logo">
-      <h1 class="header-title">Admin Panel</h1>
+<body class="admin-page"
+  style="margin:0; padding:0; font-family:'Inter',sans-serif; background:#050709; color:#fff; min-height:100vh;">
+
+  <!-- Admin Header -->
+  <header class="admin-header">
+    <div class="admin-header-title">
+      <img src="./imagenes/Logojafs.png" alt="Logo">
+      <h1>ADMIN<span>.</span>PANEL</h1>
     </div>
-    <div class="flex-center gap-md">
-      <a href="./notificaciones.html" class="btn-icon">
-        <i class="fas fa-bell"></i>
-      </a>
-      <a href="./perfil.html" class="btn-icon">
-        <img src="./imagenes/Logojafs.png" alt="Profile" style="width: 24px; height: 24px; border-radius: 50%;">
+    <div style="display:flex; gap:10px;">
+      <a href="home.html"
+        style="width:38px; height:38px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#fff; text-decoration:none;">
+        <i class="fas fa-home"></i>
       </a>
     </div>
   </header>
 
-  <main class="container" style="padding-bottom: 100px;">
-    <!-- Selector de Secciones -->
-    <section class="section-selector card" style="padding: 0.5rem; display: flex; gap: 0.5rem; overflow-x: auto;">
-      <button class="btn btn-primary tab-btn active" data-section="admin-panel" style="flex: 1; white-space: nowrap;">
-        <i class="fas fa-cogs"></i> Panel
+  <main style="padding:16px; padding-bottom:100px;">
+
+    <!-- Stats Dashboard -->
+    <div class="admin-stats-grid">
+      <div class="admin-stat-card users">
+        <i class="fas fa-users"></i>
+        <div class="admin-stat-number" id="count-users">0</div>
+        <div class="admin-stat-label">Usuarios</div>
+      </div>
+      <div class="admin-stat-card matches">
+        <i class="fas fa-calendar-alt"></i>
+        <div class="admin-stat-number" id="count-matches">0</div>
+        <div class="admin-stat-label">Reservas</div>
+      </div>
+      <div class="admin-stat-card pending">
+        <i class="fas fa-hourglass-half"></i>
+        <div class="admin-stat-number" id="count-pending">0</div>
+        <div class="admin-stat-label">Pendientes</div>
+      </div>
+      <div class="admin-stat-card played">
+        <i class="fas fa-check-double"></i>
+        <div class="admin-stat-number" id="count-played">0</div>
+        <div class="admin-stat-label">Jugados</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-tab="users">
+        <i class="fas fa-users"></i> Usuarios
       </button>
-      <button class="btn btn-secondary tab-btn" data-section="firebase-console" style="flex: 1; white-space: nowrap;">
-        <i class="fas fa-database"></i> Firebase
+      <button class="admin-tab" data-tab="matches">
+        <i class="fas fa-table-tennis-paddle-ball"></i> Partidos
       </button>
+      <button class="admin-tab" data-tab="ranking">
+        <i class="fas fa-trophy"></i> Ranking
+      </button>
+    </div>
+
+    <!-- SECTION: Users Management -->
+    <section id="section-users" class="admin-section active">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div class="admin-card-title">
+            <i class="fas fa-users-cog"></i> Gestión de Usuarios
+          </div>
+          <button class="admin-btn-icon" onclick="refreshUsers()" title="Refrescar">
+            <i class="fas fa-sync-alt"></i>
+          </button>
+        </div>
+        <div class="admin-card-body">
+          <div class="admin-search">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-users" placeholder="Buscar usuario..." oninput="filterUsers(this.value)">
+          </div>
+          <div id="users-list" style="max-height:400px; overflow-y:auto;">
+            <div class="admin-empty">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Cargando usuarios...</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <!-- SECCIÓN 1: Panel de Administración Original -->
-    <div id="admin-panel" class="section-content active">
-      <!-- Gestión de Usuarios -->
-      <section class="card seccion-admin">
-        <div class="flex-between" style="margin-bottom: 0.5rem;">
-          <h2 style="margin: 0; font-size: 1rem;"><i class="fas fa-users-cog"></i> Usuarios</h2>
-          <button class="btn btn-secondary" onclick="document.getElementById('modal-usuarios').classList.add('active')"
-            style="padding: 4px 8px; font-size: 12px;">Ver</button>
+    <!-- SECTION: Matches Management -->
+    <section id="section-matches" class="admin-section">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div class="admin-card-title">
+            <i class="fas fa-table-tennis-paddle-ball"></i> Gestión de Partidos
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="admin-btn-icon" onclick="refreshMatches()" title="Refrescar">
+              <i class="fas fa-sync-alt"></i>
+            </button>
+          </div>
         </div>
-        <div class="stat-value" id="cuenta-usuarios" style="font-size: 1.5rem;">-</div>
-        <div class="stat-label">Pendientes</div>
-      </section>
+        <div class="admin-card-body">
+          <div class="admin-search">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-matches" placeholder="Buscar por fecha o jugador...">
+          </div>
 
-      <!-- Gestión de Equipos -->
-      <section class="card seccion-admin">
-        <div class="flex-between" style="margin-bottom: 0.5rem;">
-          <h2 style="margin: 0; font-size: 1rem;"><i class="fas fa-people-group"></i> Equipos</h2>
-          <button class="btn btn-secondary" onclick="document.getElementById('modal-equipos').classList.add('active')"
-            style="padding: 4px 8px; font-size: 12px;">Ver</button>
-        </div>
-        <div class="stat-value" id="cuenta-equipos" style="font-size: 1.5rem;">-</div>
-        <div class="stat-label">Registrados</div>
-      </section>
+          <!-- Filter Chips -->
+          <div style="display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap;">
+            <button class="admin-tab active" style="flex:0; padding:8px 14px; font-size:0.65rem;"
+              data-filter="all">TODOS</button>
+            <button class="admin-tab" style="flex:0; padding:8px 14px; font-size:0.65rem;"
+              data-filter="pending">PENDIENTES</button>
+            <button class="admin-tab" style="flex:0; padding:8px 14px; font-size:0.65rem;"
+              data-filter="played">JUGADOS</button>
+          </div>
 
-      <!-- Gestión de Calendario -->
-      <section class="card seccion-admin">
-        <div class="flex-between" style="margin-bottom: 0.5rem;">
-          <h2 style="margin: 0; font-size: 1rem;"><i class="fas fa-calendar-plus"></i> Calendario</h2>
-          <button class="btn btn-secondary"
-            onclick="document.getElementById('modal-calendario').classList.add('active')"
-            style="padding: 4px 8px; font-size: 12px;">Ver</button>
-        </div>
-        <div class="stat-value" id="cuenta-jornadas" style="font-size: 1.5rem;">-</div>
-        <div class="stat-label">Jornadas</div>
-      </section>
-
-      <!-- Partidos Jugados -->
-      <section class="card seccion-admin">
-        <div class="flex-between" style="margin-bottom: 0.5rem;">
-          <h2 style="margin: 0; font-size: 1rem;"><i class="fas fa-check-double"></i> Jugados</h2>
-          <button class="btn btn-secondary" onclick="document.getElementById('modal-jugados').classList.add('active')"
-            style="padding: 4px 8px; font-size: 12px;">Ver</button>
-        </div>
-        <div class="stat-value" id="cuenta-jugados" style="font-size: 1.5rem;">-</div>
-        <div class="stat-label">Partidos</div>
-      </section>
-
-      <!-- Partidos Pendientes -->
-      <section class="card seccion-admin">
-        <div class="flex-between" style="margin-bottom: 0.5rem;">
-          <h2 style="margin: 0; font-size: 1rem;"><i class="fas fa-hourglass-half"></i> Pendientes</h2>
-          <button class="btn btn-secondary"
-            onclick="document.getElementById('modal-pendientes').classList.add('active')"
-            style="padding: 4px 8px; font-size: 12px;">Ver</button>
-        </div>
-        <div class="stat-value" id="cuenta-pendientes" style="font-size: 1.5rem;">-</div>
-        <div class="stat-label">Partidos</div>
-      </section>
-    </div>
-
-    <!-- SECCIÓN 2: Firebase Console Integrada -->
-    <div id="firebase-console" class="section-content" style="display: none;">
-      <!-- Panel de Control Principal -->
-      <section class="admin-dashboard card">
-        <div class="dashboard-header">
-          <h2 class="section-title" style="margin-bottom: 1rem;">
-            <i class="fas fa-database"></i> Firebase Console
-          </h2>
-          <div class="dashboard-stats" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
-            <div class="stat-card"
-              style="background: var(--bg-surface-2); padding: 1rem; border-radius: 8px; text-align: center;">
-              <i class="fas fa-users text-primary"></i>
-              <div class="stat-number" id="total-users" style="font-size: 1.5rem; font-weight: bold;">-</div>
-              <div class="stat-label">Usuarios</div>
-            </div>
-            <div class="stat-card"
-              style="background: var(--bg-surface-2); padding: 1rem; border-radius: 8px; text-align: center;">
-              <i class="fas fa-people-group text-accent"></i>
-              <div class="stat-number" id="total-teams" style="font-size: 1.5rem; font-weight: bold;">-</div>
-              <div class="stat-label">Equipos</div>
-            </div>
-            <div class="stat-card"
-              style="background: var(--bg-surface-2); padding: 1rem; border-radius: 8px; text-align: center;">
-              <i class="fas fa-calendar text-primary"></i>
-              <div class="stat-number" id="total-matches" style="font-size: 1.5rem; font-weight: bold;">-</div>
-              <div class="stat-label">Partidos</div>
-            </div>
-            <div class="stat-card"
-              style="background: var(--bg-surface-2); padding: 1rem; border-radius: 8px; text-align: center;">
-              <i class="fas fa-trophy text-accent"></i>
-              <div class="stat-number" id="total-collections" style="font-size: 1.5rem; font-weight: bold;">-</div>
-              <div class="stat-label">Colecciones</div>
+          <div id="matches-list" style="max-height:400px; overflow-y:auto;">
+            <div class="admin-empty">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Cargando partidos...</p>
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- Árbol visual de Firestore -->
-      <section class="collections-nav card">
-        <div class="firebase-tree-panel">
-          <div class="firebase-tree-header"
-            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <span class="firebase-tree-title"><i class="fas fa-database"></i> Estructura</span>
-            <button class="btn btn-primary" id="btn-add-collection-tree" style="padding: 4px 8px; font-size: 12px;"><i
-                class="fas fa-plus"></i> Añadir</button>
+    <!-- SECTION: Ranking Management -->
+    <section id="section-ranking" class="admin-section">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div class="admin-card-title">
+            <i class="fas fa-trophy"></i> Control de Ranking
           </div>
-          <div id="firebase-tree" class="firebase-tree"></div>
+          <button class="admin-btn-icon" onclick="recalculateRanking()" title="Recalcular Todo">
+            <i class="fas fa-calculator"></i>
+          </button>
         </div>
-      </section>
-
-      <!-- Editor de Firebase -->
-      <section class="firebase-editor card" id="firebase-editor" style="display: none;">
-        <div class="editor-header" style="margin-bottom: 1rem;">
-          <div class="breadcrumb" id="breadcrumb"
-            style="font-size: 12px; color: var(--text-muted); margin-bottom: 0.5rem;">
-            <span class="breadcrumb-item">Firebase</span>
-          </div>
-          <div class="editor-actions" style="display: flex; gap: 0.5rem;">
-            <button class="btn btn-secondary" id="btn-back" style="flex: 1;"><i class="fas fa-arrow-left"></i></button>
-            <button class="btn btn-primary" id="btn-save-changes" style="flex: 1;"><i class="fas fa-save"></i></button>
-            <button class="btn btn-secondary" id="btn-delete-item"
-              style="flex: 1; border-color: #ff4444; color: #ff4444;"><i class="fas fa-trash"></i></button>
-          </div>
-        </div>
-
-        <div class="editor-content">
-          <div class="editor-sidebar" style="margin-bottom: 1rem;">
-            <div class="sidebar-section">
-              <div class="flex-between">
-                <h4><i class="fas fa-list"></i> Documentos</h4>
-                <button class="btn btn-primary" id="btn-add-document" style="padding: 2px 6px; font-size: 10px;"><i
-                    class="fas fa-plus"></i></button>
-              </div>
-              <div class="documents-list" id="documents-list"
-                style="max-height: 150px; overflow-y: auto; background: var(--bg-surface-2); padding: 0.5rem; border-radius: 4px; margin-top: 0.5rem;">
-                <!-- Lista de documentos -->
-              </div>
-            </div>
-          </div>
-
-          <div class="editor-main">
-            <div class="document-editor" id="document-editor"
-              style="background: var(--bg-surface-2); padding: 1rem; border-radius: 4px; min-height: 200px;">
-              <div class="editor-placeholder" style="text-align: center; color: var(--text-muted); padding-top: 2rem;">
-                <i class="fas fa-file-alt" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-                <p>Selecciona un documento</p>
-              </div>
+        <div class="admin-card-body">
+          <p style="font-size:0.8rem; color:rgba(255,255,255,0.5); margin-bottom:16px;">
+            Modifica puntos, niveles y estadísticas de cualquier jugador.
+          </p>
+          <div id="ranking-admin-list" style="max-height:400px; overflow-y:auto;">
+            <div class="admin-empty">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Cargando ranking...</p>
             </div>
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   </main>
 
-  <!-- Modales para Panel de Administración Original -->
-  <div class="admin-modal modal" id="modal-usuarios">
-    <div class="modal-content">
-      <div class="close" onclick="this.closest('.admin-modal').classList.remove('active')">&times;</div>
-      <h2 class="user-management-title">Gestión de Usuarios</h2>
-      <div class="users-grid" id="lista-usuarios">
-        <!-- Los usuarios se cargarán dinámicamente aquí -->
+  <!-- Edit User Modal -->
+  <div class="admin-modal-overlay" id="modal-edit-user">
+    <div class="admin-modal">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title">
+          <i class="fas fa-user-edit"></i> Editar Usuario
+        </div>
+        <button class="admin-modal-close" onclick="closeModal('modal-edit-user')">×</button>
       </div>
-    </div>
-  </div>
-
-  <div class="admin-modal modal" id="modal-equipos">
-    <div class="modal-content">
-      <div class="close" onclick="this.closest('.admin-modal').classList.remove('active')">&times;</div>
-      <h2 class="user-management-title">Gestión de Equipos</h2>
-      <div class="form-equipo-compact">
-        <div class="equipo-creator" style="display: flex; gap: 4px; align-items: center; margin-bottom: 1rem;">
-          <select id="select-jugador1" class="input-field" style="flex: 1;">
-            <option value="">J1</option>
+      <div class="admin-modal-body">
+        <input type="hidden" id="edit-user-id">
+        <div class="admin-form-group">
+          <label class="admin-form-label">Nombre</label>
+          <input type="text" class="admin-form-input" id="edit-user-name" placeholder="Nombre del jugador">
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label class="admin-form-label">Nivel</label>
+            <input type="number" step="0.01" min="2" max="5" class="admin-form-input" id="edit-user-level"
+              placeholder="2.50">
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Puntos Ranking</label>
+            <input type="number" class="admin-form-input" id="edit-user-points" placeholder="0">
+          </div>
+        </div>
+        <div class="admin-form-row">
+          <div class="admin-form-group">
+            <label class="admin-form-label">Family Points</label>
+            <input type="number" class="admin-form-input" id="edit-user-fp" placeholder="100">
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Partidos Jugados</label>
+            <input type="number" class="admin-form-input" id="edit-user-matches" placeholder="0">
+          </div>
+        </div>
+        <div class="admin-form-group">
+          <label class="admin-form-label">Es Admin</label>
+          <select class="admin-form-input admin-form-select" id="edit-user-admin">
+            <option value="false">No</option>
+            <option value="true">Sí</option>
           </select>
-          <span class="vs-compact">VS</span>
-          <select id="select-jugador2" class="input-field" style="flex: 1;">
-            <option value="">J2</option>
-          </select>
-          <button id="btn-crear-equipo" class="btn btn-primary" style="padding: 8px;">
-            <i class="fas fa-plus"></i>
-          </button>
         </div>
       </div>
-      <div class="equipos-lista">
-        <h3 class="section-subtitle">Equipos Existentes</h3>
-        <ul id="lista-equipos-admin" class="lista-equipos-compact" style="max-height: 200px; overflow-y: auto;"></ul>
+      <div class="admin-modal-footer">
+        <button class="admin-btn admin-btn-ghost" onclick="closeModal('modal-edit-user')">Cancelar</button>
+        <button class="admin-btn admin-btn-primary" onclick="saveUserChanges()">
+          <i class="fas fa-save"></i> Guardar
+        </button>
       </div>
     </div>
   </div>
 
-  <div class="admin-modal modal" id="modal-calendario">
-    <div class="modal-content">
-      <div class="close" onclick="this.closest('.admin-modal').classList.remove('active')">&times;</div>
-      <h2 class="user-management-title">Gestión de Calendario</h2>
-      <div class="form-jornada">
-        <input type="text" id="nombre-jornada" class="input-field" placeholder="Nombre de la jornada"
-          style="margin-bottom: 1rem;">
-        <div id="partidos-jornada" class="contenedor-partidos" style="margin-bottom: 1rem;"></div>
-        <div class="controles-jornada" style="display: flex; gap: 1rem;">
-          <button id="btn-anadir-partido" class="btn btn-secondary w-full">
-            ＋ Partido
-          </button>
-          <button id="btn-crear-jornada" class="btn btn-primary w-full">
-            🗓️ Crear
-          </button>
+  <!-- Edit Match Modal -->
+  <div class="admin-modal-overlay" id="modal-edit-match">
+    <div class="admin-modal">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title">
+          <i class="fas fa-edit"></i> Editar Partido
+        </div>
+        <button class="admin-modal-close" onclick="closeModal('modal-edit-match')">×</button>
+      </div>
+      <div class="admin-modal-body">
+        <input type="hidden" id="edit-match-id">
+        <input type="hidden" id="edit-match-collection">
+
+        <div class="admin-form-group">
+          <label class="admin-form-label">Estado</label>
+          <select class="admin-form-input admin-form-select" id="edit-match-status">
+            <option value="abierto">Abierto</option>
+            <option value="cerrado">Cerrado</option>
+            <option value="jugado">Jugado</option>
+            <option value="anulado">Anulado</option>
+          </select>
+        </div>
+
+        <div class="admin-form-group">
+          <label class="admin-form-label">Resultado (ej: 6-4, 7-5)</label>
+          <input type="text" class="admin-form-input" id="edit-match-result" placeholder="6-4, 6-3">
+        </div>
+
+        <div class="admin-form-group">
+          <label class="admin-form-label">Equipo Ganador</label>
+          <select class="admin-form-input admin-form-select" id="edit-match-winner">
+            <option value="">Sin definir</option>
+            <option value="1">Equipo 1 (Pos 1-2)</option>
+            <option value="2">Equipo 2 (Pos 3-4)</option>
+          </select>
+        </div>
+
+        <div
+          style="background:rgba(0,229,255,0.05); border:1px solid rgba(0,229,255,0.15); border-radius:10px; padding:12px; margin-top:16px;">
+          <div
+            style="font-size:0.7rem; font-weight:700; color:var(--admin-accent); margin-bottom:8px; text-transform:uppercase;">
+            Jugadores</div>
+          <div id="edit-match-players" style="font-size:0.8rem; color:rgba(255,255,255,0.7);">
+            Cargando...
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-
-  <div class="admin-modal modal" id="modal-jugados">
-    <div class="modal-content">
-      <div class="close" onclick="this.closest('.admin-modal').classList.remove('active')">&times;</div>
-      <h2 class="user-management-title">Partidos Jugados</h2>
-      <div id="partidos-jugados" class="lista-partidos-admin" style="max-height: 300px; overflow-y: auto;"></div>
-    </div>
-  </div>
-
-  <div class="admin-modal modal" id="modal-pendientes">
-    <div class="modal-content">
-      <div class="close" onclick="this.closest('.admin-modal').classList.remove('active')">&times;</div>
-      <h2 class="user-management-title">Partidos Pendientes</h2>
-      <div id="partidos-pendientes" class="lista-partidos-pendientes" style="max-height: 300px; overflow-y: auto;">
-      </div>
-    </div>
-  </div>
-
-  <!-- Modales para Firebase Console (Simplified structure for app.css) -->
-  <!-- Modal para Nuevo Campo -->
-  <div class="modal" id="modal-new-field">
-    <div class="modal-content">
-      <div class="close" onclick="document.getElementById('modal-new-field').style.display='none'">&times;</div>
-      <h3><i class="fas fa-plus-circle"></i> Nuevo Campo</h3>
-      <div class="form-group">
-        <label>Nombre:</label>
-        <input type="text" id="field-name" class="input-field" placeholder="nombre">
-      </div>
-      <div class="form-group">
-        <label>Tipo:</label>
-        <select id="field-type" class="input-field">
-          <option value="string">Texto</option>
-          <option value="number">Número</option>
-          <option value="boolean">Booleano</option>
-          <option value="array">Array</option>
-          <option value="object">Objeto</option>
-          <option value="timestamp">Fecha/Hora</option>
-          <option value="reference">Referencia</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Valor:</label>
-        <input type="text" id="field-value" class="input-field" placeholder="Valor">
-      </div>
-      <div class="flex-between" style="margin-top: 1rem;">
-        <button class="btn btn-secondary"
-          onclick="document.getElementById('modal-new-field').style.display='none'">Cancelar</button>
-        <button class="btn btn-primary" onclick="addNewFieldToDocument()">Añadir</button>
+      <div class="admin-modal-footer">
+        <button class="admin-btn admin-btn-ghost" onclick="closeModal('modal-edit-match')">Cancelar</button>
+        <button class="admin-btn admin-btn-primary" onclick="saveMatchChanges()">
+          <i class="fas fa-save"></i> Guardar
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Bottom Navigation -->
   <nav class="bottom-nav">
-    <a href="./home.html" class="nav-link">
+    <a href="home.html" class="nav-link">
       <i class="fas fa-home"></i>
-      <span>Inicio</span>
+      <span>INICIO</span>
     </a>
-    <a href="./eventos.html" class="nav-link">
-      <i class="fas fa-calendar-check"></i>
-      <span>Eventos</span>
+    <a href="calendario.html" class="nav-link">
+      <i class="fas fa-calendar-alt"></i>
+      <span>RESERVAS</span>
     </a>
-    <a href="./puntosRanking.html" class="nav-fab">
+    <a href="puntosRanking.html" class="nav-fab">
       <i class="fas fa-trophy"></i>
     </a>
-    <a href="./partidos.html" class="nav-link">
-      <i class="fas fa-clipboard-list"></i>
-      <span>Partidos</span>
+    <a href="eventos.html" class="nav-link">
+      <i class="fas fa-bolt"></i>
+      <span>EVENTOS</span>
     </a>
-    <a href="./perfil.html" class="nav-link">
-      <i class="fas fa-user"></i>
-      <span>Perfil</span>
+    <a href="partidos.html" class="nav-link">
+      <i class="fas fa-table-tennis-paddle-ball"></i>
+      <span>PARTIDOS</span>
     </a>
   </nav>
 
-  <script type="module" src="./js/admin.js"></script>
-  <script type="module" src="./js/firebaseAdmin.js"></script>
-  <script type="module" src="./js/enlaceAdmin.js"></script>
-  <script src="./js/menu-hamburguesa.js"></script>
+  <script type="module" src="./js/admin-panel.js"></script>
 </body>
 
 </html>

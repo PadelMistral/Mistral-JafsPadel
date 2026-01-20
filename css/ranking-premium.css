@@ -1,165 +1,472 @@
-/* RANKING REDESIGN - COMPACT & MOTIVATING */
+/* 
+   RANKING "STADIUM" DESIGN
+   A high-density, table-based look with a physical podium.
+*/
+
+:root {
+  --rank-gold: #ffca2c;
+  --rank-silver: #e2e2e2;
+  --rank-bronze: #cd7f32;
+  --podium-bg: rgba(255, 255, 255, 0.03);
+}
 
 .ranking-container {
-  max-width: 900px;
+  width: 98%;
+  max-width: 800px;
   margin: 0 auto;
-  padding: 0.5rem 0.8rem 120px 0.8rem;
+  padding: 10px 4px 120px 4px; /* More bottom padding for navbar */
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
 }
 
-.league-table-header {
-  display: flex;
-  padding: 10px 16px;
+/* Rank Rows Styling */
+.rank-row-4 {
+  background: linear-gradient(90deg, rgba(0, 230, 118, 0.15), transparent);
+  border-left: 3px solid #00e676;
+}
+.rank-row-5 {
+  background: linear-gradient(90deg, rgba(0, 230, 118, 0.08), transparent);
+  border-left: 3px solid rgba(0, 230, 118, 0.5);
+}
+
+/* Groups of 10 */
+.rank-group-10 {
+  background: linear-gradient(
+    90deg,
+    rgba(41, 182, 246, 0.08),
+    transparent
+  ); /* Light Blue */
+}
+.rank-group-20 {
+  background: linear-gradient(
+    90deg,
+    rgba(126, 87, 194, 0.08),
+    transparent
+  ); /* Purple */
+}
+.rank-group-30 {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 112, 67, 0.08),
+    transparent
+  ); /* Orange */
+}
+
+/* Movement Arrows */
+.rank-change-up {
+  color: var(--success);
   font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.4);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  margin-left: 4px;
+}
+.rank-change-down {
+  color: var(--danger);
+  font-size: 0.7rem;
+  margin-left: 4px;
+}
+.rank-change-same {
+  color: var(--text-muted);
+  opacity: 0.3;
+  font-size: 0.6rem;
+  margin-left: 4px;
 }
 
-.lth-rank {
-  width: 40px;
-  text-align: center;
-}
-.lth-player {
-  flex: 1;
-  padding-left: 10px;
-}
-.lth-pts {
-  width: 60px;
-  text-align: right;
+/* ==================== PHYSICAL PODIUM ==================== */
+.podium-section {
+  padding: 20px 0 10px 0;
 }
 
-.league-row {
+.physical-podium {
   display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 180px;
+  gap: 2px;
+}
+
+.podium-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 12px 16px;
-  transition: all 0.2s ease;
+  transition: transform 0.3s ease;
   cursor: pointer;
-  border-radius: 12px;
-  margin-bottom: 8px;
 }
 
-.league-row:hover {
-  background: rgba(255, 255, 255, 0.08);
-  transform: translateX(4px);
+.podium-step:hover {
+  transform: translateY(-5px);
 }
 
-.lr-rank {
-  width: 40px;
-  text-align: center;
-  font-family: "Rajdhani", sans-serif;
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.lr-player {
-  flex: 1;
+/* Player above step */
+.podium-player {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding-left: 10px;
+  margin-bottom: 8px;
+  width: 100%;
 }
 
-.lr-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+.podium-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg-surface-2);
+  border: 2px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 0.8rem;
+  font-family: "Rajdhani";
+  font-weight: 800;
+  font-size: 0.9rem;
   color: #fff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  flex-shrink: 0;
+  box-shadow: var(--shadow-md);
   overflow: hidden;
 }
 
-.lr-info {
+.podium-name {
+  font-family: "Rajdhani";
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-top: 4px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.podium-crown {
+  color: var(--rank-gold);
+  font-size: 1rem;
+  margin-bottom: -5px;
+  filter: drop-shadow(0 0 5px var(--rank-gold));
+}
+
+/* The actual physical blocks */
+.step-block {
+  width: 100%;
+  background: var(--podium-bg);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border-radius: 8px 8px 0 0;
+}
+
+.step-number {
+  font-family: "Rajdhani";
+  font-size: 2rem;
+  font-weight: 900;
+  opacity: 0.2;
+  color: #fff;
+}
+
+.step-pts {
+  font-family: "Rajdhani";
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-top: -5px;
+}
+
+/* Specific Step Heights */
+.step-1 {
+  z-index: 3;
+}
+.step-1 .step-block {
+  height: 90px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 202, 44, 0.15),
+    rgba(255, 202, 44, 0.05)
+  );
+  border-color: rgba(255, 202, 44, 0.2);
+}
+.step-1 .podium-avatar {
+  width: 54px;
+  height: 54px;
+  border-color: var(--rank-gold);
+  border-width: 3px;
+}
+.step-1 .podium-name {
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+.step-1 .step-number {
+  opacity: 0.6;
+  color: var(--rank-gold);
+}
+
+.step-2 {
+  z-index: 2;
+}
+.step-2 .step-block {
+  height: 60px;
+  background: linear-gradient(
+    to bottom,
+    rgba(226, 226, 226, 0.1),
+    rgba(226, 226, 226, 0.03)
+  );
+  border-color: rgba(226, 226, 226, 0.2);
+}
+.step-2 .step-number {
+  opacity: 0.4;
+  color: var(--rank-silver);
+}
+
+.step-3 {
+  z-index: 1;
+}
+.step-3 .step-block {
+  height: 40px;
+  background: linear-gradient(
+    to bottom,
+    rgba(205, 127, 50, 0.1),
+    rgba(205, 127, 50, 0.03)
+  );
+  border-color: rgba(205, 127, 50, 0.2);
+}
+.step-3 .step-number {
+  opacity: 0.4;
+  color: var(--rank-bronze);
+}
+
+/* ==================== TABLE DESIGN ==================== */
+.ranking-table-container {
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.ranking-table th {
+  background: rgba(255, 255, 255, 0.03);
+  text-align: left;
+  padding: 10px 8px;
+  color: var(--text-muted);
+  font-family: "Rajdhani";
+  font-weight: 700;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+
+.ranking-table td {
+  padding: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  vertical-align: middle;
+}
+
+.ranking-table tr:last-child td {
+  border-bottom: none;
+}
+
+.ranking-table tr.me {
+  background: rgba(255, 107, 53, 0.05);
+}
+
+.col-rank {
+  width: 35px;
+  text-align: center !important;
+}
+.col-points {
+  text-align: right !important;
+  padding-right: 12px !important;
+}
+
+.rank-val {
+  font-family: "Rajdhani";
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.me .rank-val {
+  color: var(--primary);
+}
+
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-mini-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Rajdhani";
+  font-weight: 800;
+  font-size: 0.7rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.user-name-box {
   display: flex;
   flex-direction: column;
 }
 
-.lr-name {
+.user-name-text {
   font-weight: 700;
-  font-size: 0.95rem;
-  line-height: 1.2;
+  color: #fff;
 }
 
-.lr-stats {
-  font-size: 0.7rem;
-  opacity: 0.6;
-}
-
-.lr-pts {
-  width: 60px;
-  text-align: right;
-  font-family: "Rajdhani", sans-serif;
-  font-weight: 800;
-  font-size: 1.1rem;
-  color: var(--primary);
-}
-
-/* Special Ranks */
-.league-row.rank-1 {
-  background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), transparent);
-  border-left: 3px solid #ffd700;
-}
-.league-row.rank-1 .lr-rank {
-  color: #ffd700;
-}
-.league-row.rank-2 {
-  background: linear-gradient(90deg, rgba(192, 192, 192, 0.1), transparent);
-  border-left: 3px solid #c0c0c0;
-}
-.league-row.rank-2 .lr-rank {
-  color: #c0c0c0;
-}
-.league-row.rank-3 {
-  background: linear-gradient(90deg, rgba(205, 127, 50, 0.1), transparent);
-  border-left: 3px solid #cd7f32;
-}
-.league-row.rank-3 .lr-rank {
-  color: #cd7f32;
-}
-
-/* My Row */
-.league-row.me {
-  background: rgba(255, 107, 53, 0.15) !important;
-  border: 1px solid var(--primary);
-}
-
-/* ==================== DETAILED BREAKDOWN & MODAL UTILS ==================== */
-
-.level-progress-container {
-  width: 100%;
-}
-
-.glass-light {
-  background: rgba(25, 25, 30, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.3s ease;
-}
-
-.glass-strong {
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.badge {
-  padding: 2px 8px;
-  border-radius: 6px;
+.user-level-tag {
   font-size: 0.6rem;
-  font-weight: 700;
-  text-transform: uppercase;
+  color: var(--primary);
+  opacity: 0.8;
+  font-weight: 800;
 }
 
-@keyframes fadeInUp {
+.stats-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-row {
+  display: flex;
+  gap: 6px;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.stat-pill {
+  font-weight: 700;
+}
+
+.pts-val {
+  font-family: "Rajdhani";
+  font-weight: 900;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.pts-gain {
+  font-size: 0.55rem;
+  color: var(--success);
+}
+
+/* ==================== MODAL (Refined for space) ==================== */
+.modal-ranking-premium {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-glass-strong);
+  backdrop-filter: blur(25px);
+  z-index: 100000;
+  display: none;
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-direction: column;
+}
+
+.modal-ranking-premium.active {
+  display: flex;
+  opacity: 1;
+}
+
+.modal-header-nav {
+  padding: 10px var(--space-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  height: 48px;
+}
+
+.modal-close-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--bg-surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.modal-title-text {
+  font-family: "Rajdhani";
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+
+.user-profile-summary {
+  padding: 15px;
+  text-align: center;
+}
+
+.user-avatar-modal {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  margin: 0 auto 10px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Rajdhani";
+  font-weight: 800;
+  font-size: 1.5rem;
+  border: 2px solid var(--primary);
+  background: var(--bg-body);
+}
+
+.level-progress-bar {
+  width: 100%;
+  max-width: 200px;
+  height: 6px;
+  background: var(--bg-surface-2);
+  border-radius: 10px;
+  margin: 8px auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--primary);
+}
+
+.history-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history-match-card-mini {
+  background: var(--bg-surface);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-left: 2px solid transparent;
+}
+
+.animate-in {
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUp {
   from {
     opacity: 0;
     transform: translateY(15px);
@@ -170,81 +477,14 @@
   }
 }
 
-.animate-up {
-  animation: fadeInUp 0.5s ease backwards;
-}
-
-.flex-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.flex-between {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.flex-column {
-  display: flex;
-  flex-direction: column;
-}
-.align-center {
-  align-items: center;
-}
-
-/* Modal Adaptation */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(15px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-}
-
-.modal-overlay.active {
-  opacity: 1;
-  visibility: visible;
-}
-
-.modal-card {
-  width: 92%;
-  max-width: 420px;
-  background: #0d0e12;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-  display: flex;
-  flex-direction: column;
-  max-height: 85vh;
-  overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-}
-
-.modal-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-body {
-  padding: 20px 0;
-  overflow-y: auto;
-}
-
-.progress-fill {
-  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.text-2xs {
-  font-size: 0.65rem;
-}
-.font-rajdhani {
-  font-family: "Rajdhani", sans-serif;
+@keyframes pulse-highlight {
+  0% {
+    background-color: rgba(255, 107, 53, 0.05);
+  }
+  50% {
+    background-color: rgba(255, 107, 53, 0.2);
+  }
+  100% {
+    background-color: rgba(255, 107, 53, 0.05);
+  }
 }

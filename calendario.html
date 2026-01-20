@@ -5,224 +5,198 @@
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#030508">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Reservas - Padeluminatis</title>
     <link rel="icon" type="image/x-icon" href="./imagenes/Logojafs.png">
+    <link rel="apple-touch-icon" href="./imagenes/Logojafs.png">
+    <link rel="manifest" href="./manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Rajdhani:wght@600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Rajdhani:wght@600;700;800&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="./css/design-system-v3.css">
     <link rel="stylesheet" href="./css/app.css">
     <link rel="stylesheet" href="./css/shared-utils.css">
     <link rel="stylesheet" href="./css/bottom-nav.css">
     <link rel="stylesheet" href="./css/calendario-premium.css">
-    <style>
-        /* Layout Fixes for Full Height */
-        body {
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            height: 100dvh;
-        }
-
-        .app-header {
-            flex-shrink: 0;
-            z-index: 100;
-        }
-
-        .bottom-nav {
-            flex-shrink: 0;
-            z-index: 100;
-        }
-
-        .container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 10px 10px 0 10px;
-            overflow: hidden;
-            /* Prevent body scroll */
-        }
-
-        .calendar-header-premium {
-            flex-shrink: 0;
-        }
-
-        .calendar-main-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            margin-top: 5px;
-            min-height: 0;
-            /* Crucial for nested flex scrolling */
-        }
-
-        #semanas-calendario {
-            flex: 1;
-            overflow-y: auto;
-            /* Scroll if vertical content exceeds */
-            overflow-x: hidden;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        /* Grid table tweak */
-        .tabla-semana {
-            width: 100%;
-            height: 100%;
-            /* Fill available space */
-            border-collapse: separate;
-            border-spacing: 2px;
-        }
-    </style>
+    <link rel="stylesheet" href="./css/match-modal-v2.css">
+    <link rel="stylesheet" href="./css/ai-assistant.css">
 </head>
 
-<body class="app-body">
+<body class="app-body" style="overflow: hidden; height: 100dvh;">
     <div id="particles-js" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></div>
 
-    <header class="app-header">
+    <header class="app-header" style="height: 55px; padding: 0 15px;">
         <div class="header-left">
-            <h1 class="header-title">
-                <span class="title-main">RESERVAS</span>
-                <span class="title-dot">.</span>
-            </h1>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <img src="./imagenes/Logojafs.png" alt="Logo"
+                    style="width: 30px; height: 30px; object-fit: cover; border-radius: 50%; filter: drop-shadow(0 0 5px rgba(255,107,53,0.5));">
+                <h1 class="header-title" style="font-size: 1.1rem;">
+                    <span class="title-main">PISTAS</span>
+                    <span class="title-dot">.</span>
+                </h1>
+            </div>
         </div>
-        <div class="header-right">
-            <a href="notificaciones.html" class="notification-bell">
-                <i class="fas fa-bell"></i>
-                <span class="notification-dot"></span>
+        <div class="header-right" style="gap: 5px;">
+            <a href="admin.html" id="admin-link" class="admin-access-btn" style="display: none; font-size: 0.9rem;">
+                <i class="fas fa-user-shield"></i>
             </a>
-            <div id="header-avatar-container"></div>
+            <a href="notificaciones.html" class="nav-icon-btn notification-bell">
+                <i class="fas fa-bell"></i>
+                <span class="notification-dot" id="header-notif-dot" style="display:none;"></span>
+            </a>
+            <a href="perfil.html" class="user-profile-trigger-link">
+                <div class="user-profile-trigger" style="width: 32px; height: 32px;">
+                    <div class="spinner-small" style="width: 15px; height: 15px; border-width: 2px;"></div>
+                </div>
+            </a>
         </div>
     </header>
 
-    <main class="container animate-fade-in">
-        <!-- Controls -->
-        <div class="flex-between mb-1">
-            <div class="calendar-header-premium flex-1">
-                <div class="calendario-controls glass-strong"
-                    style="padding: 6px 16px; height: 52px; display: flex; align-items: center; justify-content: space-between;">
-                    <div class="header-clock-box"
-                        style="display: flex; flex-direction: column; align-items: flex-start;">
-                        <span id="current-time-display"
-                            style="font-family: 'Rajdhani'; font-weight: 800; font-size: 1.1rem; color: var(--primary); line-height: 1;">00:00:00</span>
-                        <span id="current-date-display"
-                            style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">HOY</span>
-                    </div>
-
-                    <div class="week-selector-info"
-                        style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; gap: 12px;">
-                        <button id="btn-semana-anterior" class="btn-nav"
-                            style="width: 30px; height: 30px; border-radius: 8px;"><i
-                                class="fas fa-chevron-left"></i></button>
-                        <div>
-                            <h2 id="rango-semana" class="week-label" style="font-size: 0.85rem; margin:0;">...</h2>
-                            <span id="mes-actual" class="month-label"
-                                style="font-size: 0.6rem; display: block; margin-top: -2px;">...</span>
+    <main class="main-scroll-container">
+        <div class="container" style="padding: 10px; padding-bottom: 90px;">
+            <!-- Compact Layout -->
+            <div class="flex-between mb-1 animate-fade-in">
+                <div class="calendar-header-premium flex-1">
+                    <div class="calendario-controls glass-strong"
+                        style="padding: 6px 16px; height: 52px; display: flex; align-items: center; justify-content: space-between;">
+                        <div class="header-clock-box"
+                            style="display: flex; flex-direction: column; align-items: flex-start;">
+                            <span id="current-time-display"
+                                style="font-family: 'Rajdhani'; font-weight: 800; font-size: 1.1rem; color: var(--primary); line-height: 1;">00:00:00</span>
+                            <span id="current-date-display"
+                                style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">DOMINGO,
+                                28 DIC</span>
                         </div>
-                        <button id="btn-semana-siguiente" class="btn-nav"
-                            style="width: 30px; height: 30px; border-radius: 8px;"><i
-                                class="fas fa-chevron-right"></i></button>
-                    </div>
 
-                    <div class="location-box text-right"
-                        style="display: flex; flex-direction: column; align-items: flex-end;">
-                        <span
-                            style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; letter-spacing: 1px;"><i
-                                class="fas fa-location-dot"></i> BENICALAP</span>
-                        <span style="font-size: 0.55rem; color: var(--accent); font-weight: 700;">VALENCIA</span>
+                        <div class="week-selector-info"
+                            style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; gap: 12px;">
+                            <button id="btn-semana-anterior" class="btn-nav"
+                                style="width: 30px; height: 30px; border-radius: 8px;"><i
+                                    class="fas fa-chevron-left"></i></button>
+                            <div>
+                                <h2 id="rango-semana" class="week-label" style="font-size: 0.85rem; margin:0;">
+                                    CARGANDO...
+                                </h2>
+                                <span id="mes-actual" class="month-label"
+                                    style="font-size: 0.6rem; display: block; margin-top: -2px;">---</span>
+                            </div>
+                            <button id="btn-semana-siguiente" class="btn-nav"
+                                style="width: 30px; height: 30px; border-radius: 8px;"><i
+                                    class="fas fa-chevron-right"></i></button>
+                        </div>
+
+                        <div class="location-box text-right"
+                            style="display: flex; flex-direction: column; align-items: flex-end;">
+                            <span
+                                style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; letter-spacing: 1px;"><i
+                                    class="fas fa-location-dot"></i> BENICALAP</span>
+                            <span style="font-size: 0.55rem; color: var(--accent); font-weight: 700;">VALENCIA</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar Grid -->
+            <div class="calendar-main-container" id="vista-tabla" style="margin-top: 5px;">
+                <div id="semanas-calendario" class="calendar-grid">
+                    <!-- Data injected by js -->
+                </div>
+
+                <div id="calendar-global-loader" class="loader-overlay" style="display: none;">
+                    <div class="loader-ring-container">
+                        <div class="spinner-small"></div>
+                    </div>
+                </div>
+
+                <!-- Better Legend at bottom -->
+                <div class="calendar-legend-pro glass-strong mt-1 p-2"
+                    style="border-radius: 14px; background: rgba(0,0,0,0.25);">
+                    <div class="flex-between px-2">
+                        <div class="legend-item-pro">
+                            <span class="legend-dot libre"></span>
+                            <div class="legend-label">
+                                <span class="l-title">LIBRE</span>
+                                <span class="l-desc">Sin reserva</span>
+                            </div>
+                        </div>
+                        <div class="legend-item-pro">
+                            <span class="legend-dot abierta"></span>
+                            <div class="legend-label">
+                                <span class="l-title">ABIERTA</span>
+                                <span class="l-desc">Huecos libres</span>
+                            </div>
+                        </div>
+                        <div class="legend-item-pro">
+                            <span class="legend-dot reservado"></span>
+                            <div class="legend-label">
+                                <span class="l-title">CERRADA</span>
+                                <span class="l-desc">Partida completa</span>
+                            </div>
+                        </div>
+                        <div class="legend-item-pro">
+                            <span class="legend-dot mi-partida"></span>
+                            <div class="legend-label">
+                                <span class="l-title">PROPIA</span>
+                                <span class="l-desc">Tu asistencia</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="calendar-bottom-info glass-strong mt-1">
+                    <div class="info-item">
+                        <i class="fas fa-info-circle text-primary"></i>
+                        <span style="font-size: 0.65rem;">Toca cualquier celda para ver detalles o reservar turno</span>
+                    </div>
+                    <div class="divider-v"></div>
+                    <div id="weather-summary-bottom" class="info-item">
+                        <i class="fas fa-temperature-half text-accent"></i>
+                        <span style="font-size: 0.65rem;">Actualizando meteo...</span>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Calendar Grid -->
-        <div class="calendar-main-container" id="vista-tabla">
-            <div id="semanas-calendario" class="calendar-grid">
-                <!-- Data injected by js -->
-            </div>
-
-            <div id="calendar-global-loader" class="loader-overlay" style="display: none;">
-                <div class="loader-ring"></div>
-            </div>
-
-            <!-- Better Legend at bottom -->
-            <div class="calendar-legend-pro glass-strong mt-1 p-2"
-                style="border-radius: 14px; background: rgba(0,0,0,0.25); flex-shrink: 0;">
-                <div class="flex-between px-2">
-                    <div class="legend-item-pro">
-                        <span class="legend-dot libre"></span>
-                        <div class="legend-label">
-                            <span class="l-title">LIBRE</span>
-                        </div>
-                    </div>
-                    <div class="legend-item-pro">
-                        <span class="legend-dot abierta"></span>
-                        <div class="legend-label">
-                            <span class="l-title">ABIERTA</span>
-                        </div>
-                    </div>
-                    <div class="legend-item-pro">
-                        <span class="legend-dot reservado"></span>
-                        <div class="legend-label">
-                            <span class="l-title">CERRADA</span>
-                        </div>
-                    </div>
-                    <div class="legend-item-pro">
-                        <span class="legend-dot mi-partida"></span>
-                        <div class="legend-label">
-                            <span class="l-title">PROPIA</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="calendar-bottom-info glass-strong mt-1" style="flex-shrink: 0;">
-                <div class="info-item">
-                    <i class="fas fa-info-circle text-primary"></i>
-                    <span style="font-size: 0.65rem;">Toca para reservar</span>
-                </div>
-                <div class="divider-v"></div>
-                <div id="weather-summary-bottom" class="info-item">
-                    <i class="fas fa-cloud-sun text-accent"></i>
-                </div>
-            </div>
         </div>
     </main>
 
     <!-- Unified Modal -->
     <div id="modal-partido-universal" class="modal-overlay">
-        <div class="modal-card">
+        <div class="modal-card glass-strong slide-up">
             <div class="modal-header">
-                <h3 id="modal-titulo" class="modal-title">DETALLES DEL TURNO</h3>
+                <h3 id="modal-titulo" class="modal-title">DETALLES</h3>
                 <button class="close-btn" id="btn-cerrar-modal">&times;</button>
             </div>
-            <div id="modal-cuerpo" class="modal-body">
+            <div id="modal-cuerpo" class="modal-body scroll-y">
                 <!-- Content generated via JS -->
             </div>
         </div>
     </div>
 
     <!-- Bottom Nav -->
-    <nav class="bottom-nav glass">
+    <nav class="bottom-nav">
         <a href="home.html" class="nav-link">
             <i class="fas fa-home"></i>
-            <span>Inicio</span>
+            <span>INICIO</span>
         </a>
-        <a href="calendario.html" class="nav-link active">
+        <a href="calendario.html" class="nav-link">
             <i class="fas fa-calendar-alt"></i>
-            <span>Reserva</span>
+            <span>PISTAS</span>
         </a>
-        <a href="puntosRanking.html" class="nav-fab">
-            <i class="fas fa-trophy"></i>
+        <a href="home.html" class="nav-fab">
+            <div class="fab-inner">
+                <img src="./imagenes/Logojafs.png" alt="O" style="width:24px; height:24px; border-radius:50%">
+            </div>
         </a>
         <a href="eventos.html" class="nav-link">
-            <i class="fas fa-medal"></i>
-            <span>Eventos</span>
+            <i class="fas fa-bolt"></i>
+            <span>EVENTOS</span>
         </a>
         <a href="partidos.html" class="nav-link">
-            <i class="fas fa-clipboard-list"></i>
-            <span>Partidos</span>
+            <i class="fas fa-table-tennis"></i>
+            <span>PARTIDOS</span>
         </a>
     </nav>
 
@@ -236,19 +210,11 @@
     <!-- Selector Overlay -->
     <div id="user-selector-overlay" class="selector-overlay">
         <div class="selector-header">
-            <h3 class="modal-title" style="color:#ff6b35"><i class="fas fa-users-viewfinder me-2"></i>ELEGIR JUGADOR
-            </h3>
+            <h3 class="modal-title">ELEGIR JUGADOR</h3>
             <button class="close-btn" onclick="closeSelector()">&times;</button>
         </div>
-
-        <div class="selector-search-box">
-            <input type="text" id="selector-search" class="selector-search-input" placeholder="Buscar por nombre..."
-                oninput="handleSelectorSearch(this.value)">
-        </div>
-
-        <div id="selector-results" class="selector-results">
-            <!-- Filled by JS -->
-        </div>
+        <input type="text" id="selector-search" class="search-bar-pro" placeholder="Nombre o nivel...">
+        <div id="selector-results" class="user-grid-selection"></div>
     </div>
 
     <script type="module" src="./js/calendario.js"></script>

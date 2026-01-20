@@ -1,569 +1,489 @@
-import {
-  getDocument,
-  getCollection,
-  initializeAuthObserver,
-} from "./firebase-service.js";
-import { db } from "./firebase-config.js";
-import {
-  collection,
-  getDocs,
-  doc,
-  getDoc,
-  updateDoc,
-  query,
-  where,
-  orderBy,
-  limit,
-  Timestamp,
-  getCountFromServer
-} from "https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js";
-import {
-  renderMatchDetailsShared,
-  executeMatchAction as executeMatchActionShared,
-  showResultFormShared,
-  executeSaveResultShared,
-  closeChatSubscription,
-  renderWeatherShared,
-  sendChatMessageShared,
-} from "./match-service.js";
-import { authGuard, renderAvatarShared, showToast } from "./ui-core.js";
+import { 
+    getDocument, 
+    getCollection, 
+    initializeAuthObserver
+} from './firebase-service.js';
+import { db, auth } from './firebase-config.js';
+import { collection, getDocs, doc, deleteDoc, query, where, onSnapshot, orderBy, limit } from 'https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js';
+import { 
+    renderMatchDetailsShared, 
+    executeMatchAction as executeMatchActionShared, 
+    showResultFormShared, 
+    executeSaveResultShared,
+    closeChatSubscription,
+    renderWeatherShared,
+    sendChatMessageShared,
+    getPlayerDisplayData
+} from './match-service.js';
+import { authGuard, countUp } from './ui-core.js';
 
 authGuard();
 
-document.addEventListener("DOMContentLoaded", async () => {
-  const usernameElement = document.getElementById("username");
-  const welcomeAvatar = document.getElementById("welcome-avatar");
-  const nextMatchContainer = document.getElementById("next-match-container");
-  const pendingMatchesList = document.getElementById("pending-matches-list");
+document.addEventListener('DOMContentLoaded', async () => {
+    const usernameElement = document.getElementById('username');
+    const nextMatchContainer = document.getElementById('next-match-container');
+    
+    let currentUser = null;
+    let userData = null;
 
-  let currentFilter = "mis";
-  let currentUser = null;
-  let userData = null;
-  let allUsersCache = {}; 
-  // Cache for user names to display "Juan, Pedro vs ..." properly
+    // --- 1. Auth & Data Loading ---
+    initializeAuthObserver(async (user) => {
+        if (user) {
+            currentUser = user;
+            try {
+                userData = await getDocument('usuarios', user.uid);
+                if (userData) {
+                    console.log("👤 [Home] UserData loaded:", userData);
+                    
+                    // 1. Admin Access Check
+                    const adminLink = document.getElementById('admin-link');
+                    if (adminLink && (userData.rol === 'Admin' || user.email === 'Juanan221091@gmail.com')) {
+                        adminLink.style.display = 'flex';
+                    }
 
-  // --- 1. Auth & Data Loading ---
-  initializeAuthObserver(async (user) => {
-    if (user) {
-      currentUser = user;
-      try {
-        // Load All Users for Cache (Optimization: load once)
-        const usersSnap = await getDocs(collection(db, "usuarios"));
-        usersSnap.forEach(d => allUsersCache[d.id] = d.data());
-
-        userData = allUsersCache[user.uid] || await getDocument("usuarios", user.uid);
-
-        updateHeaderProfile(user, userData);
-
-        await loadProfileStats(userData, user.uid);
-        loadNextMatch(user.uid);
-        loadPendingMatches(user.uid, currentFilter);
-      } catch (error) {
-        console.error("Error loading home data:", error);
-      }
-    } else {
-      window.location.href = "index.html";
-    }
-  });
-
-  function updateHeaderProfile(user, data) {
-    const displayName = data?.nombreUsuario || data?.nombre || user.email.split("@")[0];
-
-    // Update Greeting
-    const horaActual = new Date().getHours();
-    let saludo = "BUENAS NOCHES";
-    if (horaActual >= 6 && horaActual < 14) saludo = "BUENOS DÍAS";
-    else if (horaActual >= 14 && horaActual < 20) saludo = "BUENAS TARDES";
-
-    const greetingEl = document.querySelector(".greeting-text");
-    if (greetingEl) greetingEl.textContent = saludo;
-    if (usernameElement) usernameElement.textContent = displayName.toUpperCase();
-
-    // Use Shared Avatar logic
-    const avatarHtml = renderAvatarShared(user.uid, data, 'lg');
-    if (welcomeAvatar) welcomeAvatar.innerHTML = avatarHtml;
-
-    const smallAvatarHtml = renderAvatarShared(user.uid, data, 'sm');
-    const headerTriggers = document.querySelectorAll(".user-profile-trigger");
-    headerTriggers.forEach(trigger => {
-        trigger.innerHTML = smallAvatarHtml;
-    });
-  }
-
-  // --- 2. Stats Logic ---
-  async function loadProfileStats(data, uid) {
-    if (!data) return;
-    try {
-      // Re-fetch fresh user doc to ensure latest stats
-      const userRef = doc(db, 'usuarios', uid);
-      const userSnap = await getDoc(userRef);
-      const d = userSnap.exists() ? userSnap.data() : data;
-
-      const puntosRanking = Math.round(d.puntosRankingTotal || d.puntosRanking || 0);
-      const victorias = parseInt(d.victorias || 0);
-      const pjTotal = parseInt(d.partidosJugados || 0);
-      const winrate = pjTotal > 0 ? Math.round((victorias / pjTotal) * 100) : 0;
-      const nivel = parseFloat(d.nivel || 2.0).toFixed(2);
-      const rachaActual = parseInt(d.rachaActual || 0);
-      const familyPoints = parseInt(d.familyPoints || 0);
-
-      document.getElementById("stat-puntos-real").textContent = puntosRanking;
-      document.getElementById("stats-winrate-real").textContent = `${winrate}%`;
-      document.getElementById("stat-nivel-display").textContent = nivel;
-      
-      // Calculate Family Points if they are 0 (Participation Reward)
-      let finalFP = familyPoints;
-      if (finalFP === 0 && pjTotal > 0) {
-          finalFP = pjTotal * 15; // 15 FP per match
-          updateDoc(userRef, { familyPoints: finalFP });
-      }
-      document.getElementById("home-fp-total").textContent = finalFP;
-      
-      console.log(`📊 [Home] User Stats: Pts=${puntosRanking}, FP=${familyPoints}, PJ=${pjTotal}, Nivel=${nivel}`);
-      
-      const posBadge = document.getElementById("p-val-pos");
-      if (posBadge) {
-          posBadge.textContent = (d.posicion || 'DERECHA').toUpperCase();
-          posBadge.onclick = async () => {
-              const current = posBadge.textContent.trim().toUpperCase();
-              const next = current === 'DERECHA' ? 'REVÉS' : 'DERECHA';
-              showToast(`Cambiando lado a ${next}...`, 'info');
-              try {
-                  await updateDoc(userRef, { posicion: next.toLowerCase() });
-                  posBadge.textContent = next;
-                  showToast(`Ahora juegas en la ${next}`, 'success');
-              } catch(e) { console.error("Error updating side:", e); }
-          };
-      }
-
-      await calculateRankingPosition(uid, puntosRanking);
-
-      // --- Match Count Calculations (Last 30 Days) ---
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const tsThreshold = Timestamp.fromDate(thirtyDaysAgo);
-      
-      const qAm = query(collection(db, "partidosAmistosos"), where("jugadores", "array-contains", uid), where("fecha", ">=", tsThreshold));
-      const qRe = query(collection(db, "partidosReto"), where("jugadores", "array-contains", uid), where("fecha", ">=", tsThreshold));
-      
-      const [sAm, sRe] = await Promise.all([getDocs(qAm), getDocs(qRe)]);
-      const totalLastMonth = sAm.size + sRe.size;
-      document.getElementById("home-matches-week").textContent = totalLastMonth;
-
-      const streakEl = document.getElementById("home-win-streak");
-      if (streakEl) {
-        streakEl.textContent = rachaActual;
-        streakEl.style.color = rachaActual > 0 ? "#00e676" : rachaActual < 0 ? "#ff1744" : "#fff";
-      }
-    } catch (e) { console.error("Stats Error:", e); }
-  }
-
-  async function calculateRankingPosition(uid, userPoints) {
-    try {
-      console.log(`🔍 [Home] Calculating Rank for Pts: ${userPoints}`);
-      
-      const usersSnap = await getDocs(collection(db, "usuarios"));
-      const allPlayers = usersSnap.docs.map(doc => {
-          const d = doc.data();
-          return {
-              id: doc.id,
-              puntos: parseFloat(d.puntosRankingTotal || d.puntosRanking || 0)
-          };
-      });
-
-      // Sort like ranking.js
-      allPlayers.sort((a, b) => b.puntos - a.puntos);
-      
-      const myRank = allPlayers.findIndex(p => p.id === uid) + 1;
-      const pos = myRank || 0;
-      
-      console.log(`🏆 [Home] Position Result (Local Sort): #${pos} of ${allPlayers.length}`);
-      
-      const el = document.getElementById("home-rank-pos");
-      if (el) {
-          el.textContent = `#${pos}`;
-          el.style.color = pos === 1 ? "#FFD700" : pos === 2 ? "#C0C0C0" : pos === 3 ? "#CD7F32" : "#fff";
-      }
-      
-      const rankCard = document.querySelector('.premium-stat-card.primary');
-      if (rankCard) {
-          rankCard.style.cursor = 'pointer';
-          rankCard.onclick = () => window.location.href = 'puntosRanking.html';
-      }
-    } catch (e) { console.error("Ranking Calculation Error:", e); }
-  }
-
-  // --- 3. Matches Logic (Optimized) ---
-  async function loadNextMatch(uid) {
-    if (nextMatchContainer) nextMatchContainer.innerHTML = '<div class="loader-ring-container py-4"><div class="loader-ring"></div></div>';
-    try {
-      const now = new Date();
-      // Fetch all future matches for user, sort client side to find the CLOSEST one
-      const matches = await fetchAllMatchesForUser(uid, true); // True = future only
-      
-      const sorted = matches.sort((a,b) => a.fechaObj - b.fechaObj);
-      const nextMatch = sorted[0];
-
-      if (nextMatch) {
-          renderNextMatch(nextMatch);
-      } else {
-          nextMatchContainer.innerHTML = `<div class="empty-next-match animate-fade-in"><i class="fas fa-calendar-check"></i><p>No tienes partidos próximos</p></div>`;
-      }
-
-      // Check ALL matches for Today to send reminders
-      const today = new Date().toDateString();
-      const todayMatches = matches.filter(m => m.fechaObj.toDateString() === today);
-      
-      if (todayMatches.length > 0) {
-          import('./notifications-service.js').then(notifRepo => {
-              todayMatches.forEach(m => {
-                  const timeStr = m.fechaObj.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
-                  notifRepo.createTodayReminder(uid, m.id, timeStr);
-              });
-          });
-          
-          const closestToday = todayMatches[0];
-          const cTime = closestToday.fechaObj.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
-          showToast(`¡Tienes partido hoy a las ${cTime}! 🎾`, 'success');
-      }
-    } catch (error) {
-      console.error("NextMatch Error:", error);
-      nextMatchContainer.innerHTML = `<div class="empty-next-match"><i class="fas fa-exclamation-circle text-warning"></i><p>Error de carga</p></div>`;
-    }
-  }
-
-  async function fetchAllMatchesForUser(uid, futureOnly = false) {
-      const now = new Date();
-      let qAmistoso = query(collection(db, "partidosAmistosos"), where("jugadores", "array-contains", uid), limit(50));
-      let qReto = query(collection(db, "partidosReto"), where("jugadores", "array-contains", uid), limit(50));
-      
-      const [snapA, snapR] = await Promise.all([getDocs(qAmistoso), getDocs(qReto)]);
-      let list = [];
-      const process = (doc, type) => {
-          const d = doc.data();
-          const date = d.fecha?.toDate ? d.fecha.toDate() : new Date(d.fecha);
-          if (futureOnly && date < now) return;
-          list.push({ id: doc.id, tipo: type, fechaObj: date, ...d });
-      };
-      
-      snapA.forEach(d => process(d, 'amistoso'));
-      snapR.forEach(d => process(d, 'reto'));
-      return list;
-  }
-
-  function renderNextMatch(match) {
-    if (!nextMatchContainer) return;
-    const fecha = match.fechaObj;
-    const dia = fecha.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "short" }).toUpperCase();
-    const hora = fecha.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
-    const creator = match.creadorNombre || "Organizador";
-
-    // Use shared renderer for Next Match basically, or specific one
-    nextMatchContainer.innerHTML = `
-            <div class="next-match-card-premium glass-strong animate-fade-in" onclick="openMatchModalHome('${match.id}', '${match.tipo}')">
-                <div class="nm-header">
-                    <div class="flex-center gap-2">
-                        <span class="badge ${match.tipo}">${match.tipo.toUpperCase()}</span>
-                        <div class="text-xs opacity-70"><i class="fas fa-crown text-warning"></i> ${creator}</div>
-                    </div>
-                    <span class="nm-live"><i class="fas fa-circle animate-pulse text-danger"></i> PRÓXIMO</span>
-                </div>
-                <div class="nm-body">
-                    <div class="nm-date-info">
-                        <div class="nm-day">${dia}</div>
-                        <div class="nm-hour">${hora}</div>
-                    </div>
-                     <div class="nm-vs-info">
-                        <div class="nm-players-count">${match.jugadores?.length || 0}/4 JUGADORES</div>
-                        <div class="btn-view-match">GESTIONAR <i class="fas fa-arrow-right ml-1"></i></div>
-                    </div>
-                </div>
-            </div>
-        `;
-  }
-
-  async function loadPendingMatches(uid, filter = "mis") {
-    const pContainer = document.getElementById("pending-matches-list");
-    if (!pContainer) return;
-    pContainer.innerHTML = '<div class="text-center p-3"><div class="spinner-small"></div></div>';
-
-    try {
-      const now = new Date();
-      let matches = [];
-
-      if (filter === "mis") {
-        // Future matches where I AM a player
-        matches = await fetchAllMatchesForUser(uid, true);
-        matches.sort((a,b) => a.fechaObj - b.fechaObj);
-      } 
-      else if (filter === "jugados") {
-        // Past matches where I WAS a player
-        // Fetch all (no future filter) then filter by date < now
-        const all = await fetchAllMatchesForUser(uid, false);
-        matches = all.filter(m => m.fechaObj < now);
-        matches.sort((a,b) => b.fechaObj - a.fechaObj); // Desk sorting (newest first)
-      } 
-      else if (filter === "todos") {
-        // Future matches where I am NOT a player (Discovery)
-        // Fetch future matches generally (limit 20)
-        // Note: Firestore array-contains-not-in doesn't exist efficiently. 
-        // We fetch future matches and filter client side.
-        const qA = query(collection(db, "partidosAmistosos"), where("fecha", ">=", Timestamp.fromDate(now)), limit(20));
-        const qR = query(collection(db, "partidosReto"), where("fecha", ">=", Timestamp.fromDate(now)), limit(20));
-        
-        const [sA, sR] = await Promise.all([getDocs(qA), getDocs(qR)]);
-        
-        const process = (d, t) => {
-            const data = d.data();
-            const date = data.fecha?.toDate ? data.fecha.toDate() : new Date(data.fecha);
-            if (!data.jugadores?.includes(uid)) { 
-                matches.push({ id: d.id, tipo: t, fechaObj: date, ...data });
+                    const displayName = userData?.nombreUsuario || userData?.nombre || user.displayName || user.email.split('@')[0];
+                    if (usernameElement) usernameElement.textContent = displayName.toUpperCase();
+                    
+                    updateSalutation();
+                    await loadProfileStats(userData, user.uid);
+                    loadNextMatch(user.uid);
+                    loadPendingMatches(user.uid, 'abierto'); 
+                    
+                    // 2. Online Logic
+                    countOnlineUsers();
+                    
+                    // 3. AI Advice Logic
+                    if(window.padeluminatisAI?.updateFromUserData) {
+                        window.padeluminatisAI.updateFromUserData(userData);
+                    }
+                    generateAIAdviceMini(userData);
+                }
+            } catch (error) {
+                console.error("Error in home-logic:", error);
             }
-        };
-        sA.forEach(d => process(d, 'amistoso'));
-        sR.forEach(d => process(d, 'reto'));
+        } else {
+            window.location.href = 'index.html';
+        }
+    });
+
+    function updateSalutation() {
+        const horaActual = new Date().getHours();
+        let saludo = 'BUENAS NOCHES';
+        if (horaActual >= 6 && horaActual < 14) saludo = 'BUENOS DÍAS';
+        else if (horaActual >= 14 && horaActual < 20) saludo = 'BUENAS TARDES';
         
-        matches.sort((a,b) => a.fechaObj - b.fechaObj);
-        matches = matches.slice(0, 10); // Max 10
-      }
-
-      renderPendingMatches(matches, filter);
-
-    } catch (error) {
-      console.error("Matches Load Error:", error);
-      pContainer.innerHTML = `<div class="empty-state-matches"><i class="fas fa-exclamation-triangle"></i><p>Error cargando partidos</p></div>`;
-    }
-  }
-
-  async function renderPendingMatches(matches, filter) {
-    const list = document.getElementById("pending-matches-list");
-    if (!list) return;
-
-    // Filter Logic for 'Jugados' (Last 48 hours only)
-    let displayMatches = matches;
-    if (filter === 'jugados') {
-        const twoDaysAgo = new Date();
-        twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-        displayMatches = matches.filter(m => m.fechaObj >= twoDaysAgo);
+        const greetingEl = document.getElementById('greeting-text');
+        if (greetingEl) greetingEl.textContent = saludo;
     }
 
-    if (displayMatches.length === 0) {
-      let msg = "No hay partidos disponibles";
-      if (filter === "mis") msg = "No tienes partidos futuros";
-      if (filter === "jugados") msg = "No hay resultados recientes (últimos 2 días)";
-      list.innerHTML = `<div class="empty-state-matches animate-fade-in"><i class="fas fa-inbox"></i><p>${msg}</p></div>`;
-      return;
+    function generateAIAdviceMini(data) {
+        const textEl = document.getElementById('ai-suggestion-text');
+        if (!textEl) return;
+        
+        const name = data.nombreUsuario || data.nombre || 'Jugador';
+        const racha = parseInt(data.rachaActual || 0);
+        
+        if (racha > 1) {
+            textEl.textContent = `¡Fascinante, ${name}! Tu racha de ${racha} victorias es digna de la élite galáctica.`;
+        } else if (racha < 0) {
+            textEl.textContent = `${name}, analizo que un amistoso hoy restaurará tu balance victorias/derrotas.`;
+        } else {
+            textEl.textContent = `Bienvenido, ${name}. He calculado nuevos retos para ti en la biblioteca.`;
+        }
     }
 
-    list.innerHTML = "";
+    // --- 2. Stats Logic ---
+    async function loadProfileStats(data, uid) {
+        if (!data) return;
+        try {
+            const puntosRanking = Math.round(data.puntosRankingTotal || data.puntosRanking || 0);
+            const partidosJugados = parseInt(data.partidosJugados || 0);
+            const nivel = parseFloat(data.nivel || 2.0).toFixed(1);
+            const rachaActual = parseInt(data.rachaActual || 0);
 
-    for (const m of displayMatches) {
-      const card = document.createElement("div");
-      
-      // Calculate missing Result status
-      const isPast = m.fechaObj < new Date();
-      const isCompleted = m.estado === 'jugado' || (m.resultado && m.resultado.sets);
-      const isJoined = m.jugadores?.includes(currentUser.uid);
-      
-      // Gray out anulled matches (past but not completed)
-      let grayStyle = '';
-      if (filter === 'jugados' && !isCompleted && isPast) {
-          grayStyle = 'style="filter: grayscale(1); opacity: 0.6;"';
-      }
-      
-      card.className = "mini-match-card-premium animate-fade-in";
-      if(grayStyle) card.setAttribute("style", "filter: grayscale(1); opacity: 0.6;");
-      
-      card.onclick = () => openMatchModalHome(m.id, m.tipo);
+            if (document.getElementById('stat-nivel-display')) document.getElementById('stat-nivel-display').textContent = nivel;
+            if (document.getElementById('stat-fp-welcome')) countUp(document.getElementById('stat-fp-welcome'), data.familyPoints || 0);
+            if (document.getElementById('home-win-streak')) {
+                const streakEl = document.getElementById('home-win-streak');
+                countUp(streakEl, rachaActual);
+                streakEl.style.color = rachaActual > 0 ? '#00e676' : (rachaActual < 0 ? '#ff1744' : '#fff');
+            }
+            if (document.getElementById('home-matches-week')) countUp(document.getElementById('home-matches-week'), partidosJugados);
 
-      // --- Data Prep ---
-      const fecha = m.fechaObj;
-      const dateStr = fecha.toLocaleDateString("es-ES", { day:'numeric', month:'short' }).toUpperCase();
-      const timeStr = fecha.toLocaleTimeString("es-ES", { hour:'2-digit', minute:'2-digit' });
+            await calculateRankingPosition(uid, puntosRanking);
+        } catch (e) { console.error(e); }
+    }
 
-      // Players Naming
-      const pNames = (m.jugadores || []).map(pid => {
-          const u = allUsersCache[pid];
-          const n = u ? (u.nombreUsuario || u.nombre) : 'Jugador';
-          return n.split(' ')[0]; // First name only
-      });
-      // Fill empty slots
-      for(let i=pNames.length; i<4; i++) pNames.push('<span style="opacity:0.3">LIBRE</span>');
+    async function countOnlineUsers() {
+        const display = document.getElementById('online-count-display');
+        if (!display) return;
+        try {
+            // Real WhatsApp-style online count (active in last 5 minutes)
+            const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000);
+            const onlineUsers = await getCollection('usuarios', [['lastActive', '>=', fiveMinsAgo]]);
+            display.textContent = `${onlineUsers.length} En línea`;
+        } catch (e) {
+            display.textContent = `0 En línea`;
+        }
+    }
 
-      const team1Str = `${pNames[0]}, ${pNames[1]}`;
-      const team2Str = `${pNames[2]}, ${pNames[3]}`;
+    async function calculateRankingPosition(uid, userPoints) {
+        try {
+            const allUsers = await getCollection('usuarios', [], [], 500);
+            allUsers.sort((a, b) => (b.puntosRankingTotal || b.puntosRanking || 0) - (a.puntosRankingTotal || a.puntosRanking || 0));
+            const index = allUsers.findIndex(u => u.id === uid);
+            if (index !== -1) {
+                const pos = index + 1;
+                const el = document.getElementById('home-rank-pos');
+                const statusEl = document.getElementById('user-rank-status');
+                if (el) {
+                    el.textContent = `#${pos}`;
+                    let color = 'var(--text-main)';
+                    let statusText = `${userPoints} PTS`;
 
-      // Logic for Status Display
-      let statusHtml = '';
-      let isGray = false;
+                    if (pos === 1) { color = '#FFD700'; statusText = 'LÍDER SUPREMO'; }
+                    else if (pos === 2) color = '#C0C0C0';
+                    else if (pos === 3) color = '#CD7F32';
+                    else if (pos <= 10) color = 'var(--primary)';
+                    
+                    el.style.color = color;
+                    if (statusEl) {
+                        const spanEl = statusEl.querySelector('span');
+                        if (spanEl) spanEl.textContent = statusText;
+                        statusEl.style.borderColor = color;
+                        statusEl.style.color = color;
+                    }
+                }
+            }
+        } catch (e) { console.error(e); }
+    }
 
-      if (filter === 'jugados') {
-          if (!isCompleted) {
-            isGray = true;
-            statusHtml = `<div class="status-badge anulled">SIN RESULTADO</div>`;
-          } else {
-             statusHtml = `<div class="status-badge played">FINALIZADO</div>`; 
-          }
-      } else {
-          // Future
-          const spots = 4 - (m.jugadores?.length || 0);
-          statusHtml = spots > 0 
-            ? `<div class="status-badge open">${spots} LIBRES</div>`
-            : `<div class="status-badge closed">COMPLETO</div>`;
-      }
+    // --- 3. Upcoming Matches Carousel ---
+    let upcomingMatchesArray = [];
+    let currentCarouselIndex = 0;
 
-      // Level
-      const lvl = parseFloat(m.nivelPromedio || 4.2).toFixed(1); // Default adjusted or could be calc
-      let lvlClass = 'lvl-mid';
-      if (lvl < 3) lvlClass = 'lvl-low';
-      if (lvl > 5) lvlClass = 'lvl-high';
-      
-      // --- Weather Integration ---
-      let weatherHtml = `<i class="fas fa-sun text-weather"></i> <span style="font-size:0.7rem; color:#fff;">--°</span>`;
-      try {
-          const lat = 39.4938; const lon = -0.3957;
-          const hIdx = fecha.getHours();
-          const fDate = fecha.toISOString().split('T')[0];
-          const wResp = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weather_code&start_date=${fDate}&end_date=${fDate}`);
-          const wData = await wResp.json();
-          if (wData?.hourly) {
-              const temp = Math.round(wData.hourly.temperature_2m[hIdx]);
-              const code = wData.hourly.weather_code[hIdx];
-              let icon = 'fa-sun';
-              if(code > 3) icon = 'fa-cloud-sun';
-              if(code > 50) icon = 'fa-cloud-rain';
-              weatherHtml = `<i class="fas ${icon} text-weather"></i> <span style="font-size:0.7rem; color:#fff;">${temp}°</span>`;
-          }
-      } catch(e) {}
+    async function loadNextMatch(uid) {
+        const container = document.getElementById('next-match-container');
+        if (container) container.innerHTML = '<div class="loader-ring-container"><div class="spinner-small"></div></div>';
+        
+        try {
+            const now = new Date();
+            const am = await getCollection('partidosAmistosos', [['jugadores', 'array-contains', uid]]);
+            const re = await getCollection('partidosReto', [['jugadores', 'array-contains', uid]]);
+            
+            upcomingMatchesArray = [
+                ...am.map(m => ({...m, tipo: 'amistoso'})), 
+                ...re.map(m => ({...m, tipo: 'reto'}))
+            ]
+                .map(m => ({ ...m, fechaObj: m.fecha?.toDate ? m.fecha.toDate() : new Date(m.fecha) }))
+                .filter(m => m.estado !== 'jugado' && m.fechaObj >= now)
+                .sort((a, b) => a.fechaObj - b.fechaObj);
 
-      // Action Button (Add Result)
-      let actionButton = "";
-      if (filter === 'jugados' && !isCompleted && isJoined) {
-          // User needs to add result!
-          actionButton = `<button class="btn-result-action mt-2" onclick="event.stopPropagation(); showResultFormShared('${m.id}', '${m.tipo}')"><i class="fas fa-pen"></i> AÑADIR RESULTADO</button>`;
-          statusHtml = ''; // Hide status badge if button is shown
-      }
-      else if (!m.estado || m.estado !== "jugado") {
-        // Future match actions if needed
-      }
+            if (upcomingMatchesArray.length > 0) {
+                currentCarouselIndex = 0;
+                if (upcomingMatchesArray.length > 1) {
+                    const nav = document.getElementById('nm-carousel-nav');
+                    if (nav) nav.style.display = 'flex';
+                    setupCarouselNav();
+                }
+                renderNextMatch(upcomingMatchesArray[0]);
+            } else {
+                if (container) {
+                    container.innerHTML = `
+                        <div class="empty-next-match glass-strong p-3 text-center rounded-lg border-glass">
+                            <i class="fas fa-calendar-check text-muted opacity-30 mb-2" style="font-size:1.5rem;"></i>
+                            <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:4px; font-weight:600">SIN PARTIDOS PRÓXIMOS</div>
+                            <a href="calendario.html" class="text-xs text-primary font-bold tracking-widest hover:text-accent transition-colors" style="text-decoration:none; border-bottom:1px dotted var(--primary);">
+                                BUSCAR PARTIDAS ABIERTAS
+                            </a>
+                        </div>
+                    `;
+                }
+                const nav = document.getElementById('nm-carousel-nav');
+                if (nav) nav.style.display = 'none';
+            }
+        } catch (error) { console.error(error); }
+    }
 
-      // Result Display
-      let resultDisplay = "";
-      if (m.estado === "jugado" && m.resultado?.sets) {
-        resultDisplay = `
-            <div class="result-display-premium">
-                <span class="text-2xs opacity-50 font-bold mr-2">RESULTADO</span>
-                <span class="result-score" style="font-size:1.1rem; color:#fff;">${m.resultado.sets}</span>
+    function setupCarouselNav() {
+        const prevBtn = document.getElementById('nm-prev');
+        const nextBtn = document.getElementById('nm-next');
+        if (prevBtn && nextBtn) {
+            prevBtn.onclick = () => {
+                currentCarouselIndex = (currentCarouselIndex - 1 + upcomingMatchesArray.length) % upcomingMatchesArray.length;
+                renderNextMatch(upcomingMatchesArray[currentCarouselIndex]);
+            };
+            nextBtn.onclick = () => {
+                currentCarouselIndex = (currentCarouselIndex + 1) % upcomingMatchesArray.length;
+                renderNextMatch(upcomingMatchesArray[currentCarouselIndex]);
+            };
+        }
+    }
+
+    async function renderNextMatch(match) {
+        const container = document.getElementById('next-match-container');
+        if (!container) return;
+        
+        const indicator = document.getElementById('nm-indicator');
+        if (indicator) indicator.textContent = `${currentCarouselIndex + 1}/${upcomingMatchesArray.length}`;
+
+        const date = match.fechaObj;
+        const time = date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        const dayName = date.toLocaleDateString('es-ES', { weekday: 'long' }).toUpperCase();
+        const dayNum = date.getDate();
+        const month = date.toLocaleDateString('es-ES', { month: 'short' }).toUpperCase();
+        
+        const isFull = (match.jugadores?.length || 0) >= 4;
+        const statusText = isFull ? 'COMPLETA' : 'ABIERTA';
+        const statusClass = isFull ? 'full' : 'open';
+
+        // Get Player Data correctly
+        const players = await Promise.all([0,1,2,3].map(async i => {
+            const pid = match.jugadores?.[i];
+            if (!pid) return { name: '-', color: '#555', level: 0, isPlaceholder: true };
+            try {
+                const pData = await getPlayerDisplayData(pid);
+                return pData || { name: '??', color: '#777', level: 2.5 };
+            } catch (e) {
+                return { name: '??', color: '#777', level: 2.5 };
+            }
+        }));
+
+        // Calculate Win Prob (Mock or Based on Levels)
+        const team1Level = (players[0].level || 2.5) + (players[1].level || 2.5);
+        const team2Level = (players[2].level || 2.5) + (players[3].level || 2.5);
+        let winProb = 50;
+        if(team1Level > 0 && team2Level > 0) {
+            winProb = Math.round((team1Level / (team1Level + team2Level)) * 100);
+            if (winProb < 35) winProb = 35; if (winProb > 65) winProb = 65;
+        }
+
+        // Vecina AP Commentary
+        const apComment = getAPCommentary(winProb, match.tipo);
+
+        container.innerHTML = `
+            <div class="next-match-card-v4 animate-fade-in" onclick="window.openMatchModalHome('${match.id}', '${match.tipo}')">
+                <div class="nm-v4-top flex-between">
+                    <div class="nm-v4-type ${match.tipo || 'amistoso'}">
+                        <i class="fas ${match.tipo === 'reto' ? 'fa-fire' : 'fa-handshake'}"></i>
+                        ${(match.tipo || 'amistoso').toUpperCase()}
+                    </div>
+                    <div class="nm-v4-weather" id="nm-weather-${match.id}">
+                        <i class="fas fa-cloud-sun mr-1"></i> 22°C
+                    </div>
+                </div>
+
+                <div class="nm-v4-main">
+                    <div class="nm-v4-date-box">
+                        <span class="nm-v4-day">${dayNum}</span>
+                        <span class="nm-v4-month">${month}</span>
+                    </div>
+                    <div class="nm-v4-info">
+                        <span class="nm-v4-time-large">${time}</span>
+                        <span class="nm-v4-weekday">${dayName}</span>
+                    </div>
+                    <div class="nm-v4-prob">
+                        <div class="prob-circle">
+                            <svg viewBox="0 0 36 36" class="circular-chart">
+                                <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                <path class="circle" stroke-dasharray="${winProb}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            </svg>
+                            <span class="prob-val">${winProb}%</span>
+                        </div>
+                        <span class="prob-label">WIN PROB</span>
+                    </div>
+                </div>
+
+                <div class="nm-v4-teams">
+                    <div class="v4-team team-top">
+                        <span style="color:${players[0].color}">${players[0].name}</span>
+                        <span class="v4-sep">+</span>
+                        <span style="color:${players[1].color}">${players[1].name}</span>
+                    </div>
+                    <div class="v4-vs">VS</div>
+                    <div class="v4-team team-bottom">
+                        <span style="color:${players[2].color}">${players[2].name}</span>
+                        <span class="v4-sep">+</span>
+                        <span style="color:${players[3].color}">${players[3].name}</span>
+                    </div>
+                </div>
+
+                <div class="nm-v4-ai-ap">
+                    <div class="ap-avatar-mini"><i class="fas fa-robot"></i></div>
+                    <div class="ap-bubble-mini">${apComment}</div>
+                </div>
             </div>
         `;
-        statusHtml = resultDisplay; // Replace status badge with score
-      }
 
-      card.innerHTML = `
-         <div class="mmc-top">
-            <div class="mmc-date-weather">
-                <span class="mmc-dw-date">${dateStr}</span>
-                <span class="mmc-dw-sep">|</span>
-                <span class="text-time">${timeStr}</span>
-                <span class="mmc-dw-sep">|</span>
-                ${weatherHtml}
-            </div>
-            <div class="badge-mini-lvl ${lvlClass}">NIVEL ${lvl}</div>
-         </div>
-
-         <div class="mmc-vs-area">
-            <div class="mmc-team t1">${team1Str}</div>
-            <div class="mmc-vs-badge">VS</div>
-            <div class="mmc-team t2">${team2Str}</div>
-         </div>
-
-         <div class="mmc-bottom" style="align-items: center;">
-            <div class="mmc-creator">
-                <span class="creator-label">ORGANIZA</span>
-                <span class="creator-name">${m.creadorNombre || 'Admin'}</span>
-            </div>
-            <div style="display:flex; flex-direction:column; align-items:flex-end;">
-                 ${statusHtml}
-                 ${actionButton}
-            </div>
-         </div>
-         ${isGray ? '<div class="anulled-overlay">NO COMPLETADA</div>' : ''}
-      `;
-      
-      list.appendChild(card);
+        // Load Real Weather
+        loadWeatherMini(document.getElementById(`nm-weather-${match.id}`), date);
     }
-  }
 
-  // --- Modal Logic ---
-  window.openMatchModalHome = async (id, type) => {
-    const modal = document.getElementById("modal-partido-universal");
-    const container = document.getElementById("modal-cuerpo");
-    const title = document.getElementById("modal-titulo");
-    const colName = (type || "").toLowerCase().includes("reto") ? "partidosReto" : "partidosAmistosos";
-
-    if (title) title.textContent = "DETALLES";
-    modal.classList.add("active");
-    modal.style.visibility = "visible"; // Ensure visibility
-    container.innerHTML = '<div class="p-5 text-center"><div class="loader-ring mx-auto"></div></div>';
-
-    try {
-      const snap = await getDocument(colName, id);
-      if (snap) {
-        const match = { id, ...snap };
-        await renderMatchDetailsShared(container, match, currentUser, userData);
-      } else {
-        container.innerHTML = '<div class="p-4 text-center"><i class="fas fa-ghost mb-2"></i><p>El partido ya no existe.</p></div>';
-      }
-    } catch (error) {
-      container.innerHTML = '<div class="p-4 text-center"><p>Error al cargar detalles.</p></div>';
+    function getAPCommentary(prob, type) {
+        if (prob > 55) return "Mis sensores detectan una victoria inminente si mantienes la calma en la red.";
+        if (prob < 45) return "El nexo sugiere jugar a los globos. El rival es superior técnicamente.";
+        return "Probabilidades equilibradas. El primer set decidirá el flujo cuántico del partido.";
     }
-  };
 
-  window.closeMatchModal = () => {
-    const modal = document.getElementById("modal-partido-universal");
-    if (modal) {
-        modal.classList.remove("active");
-        setTimeout(() => modal.style.visibility = "hidden", 300); // Wait for transition
+    async function loadWeatherMini(container, date) {
+        if(!container) return;
+        try {
+            const { renderWeatherShared } = await import('./match-service.js');
+            await renderWeatherShared(container, date);
+        } catch(e) { container.innerHTML = '<i class="fas fa-sun"></i> 24°C'; }
     }
-    closeChatSubscription();
-  };
 
-  // --- Global Expose ---
-  window.executeMatchAction = async (action, id, type, extra = null) => {
-    const success = await executeMatchActionShared(action, id, type, currentUser, userData, extra);
-    if (success) {
-      if (action === "delete") window.closeMatchModal();
-      else {
-        const colName = type.toLowerCase().includes("reto") ? "partidosReto" : "partidosAmistosos";
-        const snap = await getDocument(colName, id);
-        if (snap) await renderMatchDetailsShared(document.getElementById("modal-cuerpo"), { id, ...snap }, currentUser, userData);
-        else window.closeMatchModal();
-      }
-      loadNextMatch(currentUser.uid);
-      loadPendingMatches(currentUser.uid, currentFilter);
+    // --- 4. Library Logic ---
+    window.activeFilters = { date: 'all', status: 'abierto', type: 'all' };
+
+    window.setHomeFilter = (category, value, btnElement) => {
+        const container = btnElement.parentElement;
+        container.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+        btnElement.classList.add('active');
+
+        if (category === 'date') window.activeFilters.date = value;
+        else if (category === 'status') {
+            window.activeFilters.status = value;
+            window.activeFilters.type = 'all';
+        } else if (category === 'type') {
+            window.activeFilters.type = value;
+            window.activeFilters.status = 'all';
+        }
+
+        loadPendingMatches(currentUser.uid);
+    };
+
+    async function loadPendingMatches(uid, forceStatus = null) {
+        const list = document.getElementById('pending-matches-list');
+        if (list) list.innerHTML = '<div class="loader-ring-container"><div class="spinner-small"></div></div>';
+
+        if (forceStatus) {
+            window.activeFilters.status = forceStatus;
+            // Ensure UI tab reflects this
+            document.querySelectorAll('[data-category="status"]').forEach(btn => {
+                if (btn.getAttribute('onclick').includes(`'${forceStatus}'`)) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+        }
+
+        try {
+            const now = new Date();
+            const pastDate = new Date(); pastDate.setDate(now.getDate() - 7);
+            
+            const [am, re] = await Promise.all([
+                getCollection('partidosAmistosos', [['fecha', '>=', pastDate]]),
+                getCollection('partidosReto', [['fecha', '>=', pastDate]])
+            ]);
+
+            const all = [...am.map(m=>({...m,tipo:'amistoso'})), ...re.map(m=>({...m,tipo:'reto'}))];
+            all.forEach(m => m.fechaObj = m.fecha?.toDate ? m.fecha.toDate() : new Date(m.fecha));
+
+            const fDate = window.activeFilters.date;
+            const fStatus = window.activeFilters.status;
+            const fType = window.activeFilters.type;
+
+            const filtered = all.filter(m => {
+                const mDate = m.fechaObj;
+                if (fDate === 'today' && mDate.toDateString() !== now.toDateString()) return false;
+                if (fDate === 'tomorrow') {
+                    const tmrw = new Date(); tmrw.setDate(now.getDate()+1);
+                    if(mDate.toDateString() !== tmrw.toDateString()) return false;
+                }
+                if (fDate === 'week') {
+                    const nextWeek = new Date(); nextWeek.setDate(now.getDate()+7);
+                    if(mDate < now || mDate > nextWeek) return false;
+                }
+
+                if (fType !== 'all' && m.tipo !== fType) return false;
+                if (fStatus === 'abierto' && (m.estado === 'jugado' || (m.jugadores?.length || 0) >= 4)) return false;
+                if (fStatus === 'played' && m.estado !== 'jugado') return false;
+
+                return true;
+            });
+
+            filtered.sort((a,b) => b.fechaObj - a.fechaObj);
+            renderLibrary(filtered);
+        } catch (e) { console.error(e); }
     }
-  };
 
-  window.showResultFormShared = showResultFormShared;
-  window.executeSaveResultShared = async (id, type) => {
-    await executeSaveResultShared(id, type);
-    window.closeMatchModal();
-    loadNextMatch(currentUser.uid);
-    loadPendingMatches(currentUser.uid, currentFilter);
-  };
-  window.sendChatMessageShared = sendChatMessageShared;
-  window.openSelectorShared = () => (window.location.href = "calendario.html");
+    async function renderLibrary(matches) {
+        const list = document.getElementById('pending-matches-list');
+        if (!list) return;
+        if (matches.length === 0) {
+            list.innerHTML = '<div class="p-4 text-center opacity-50 text-xs">NO SE ENCONTRARON PARTIDOS</div>';
+            return;
+        }
 
-  // --- Event Listeners ---
-  const filterButtons = document.querySelectorAll(".toggle-btn-premium");
-  if (filterButtons) {
-    filterButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        filterButtons.forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        currentFilter = btn.dataset.filter;
-        if (currentUser) loadPendingMatches(currentUser.uid, currentFilter);
-      });
-    });
-  }
+        const htmlArray = await Promise.all(matches.map(async m => {
+            // Get participants summary
+            const participantNames = await Promise.all((m.jugadores || []).map(async pid => {
+                 const p = await getPlayerDisplayData(pid);
+                 return p.name;
+            }));
+            const pText = participantNames.length > 0 ? participantNames.join(', ') : 'Pista libre';
+
+            return `
+                <div class="match-mini-card-premium animate-fade-in" onclick="window.openMatchModalHome('${m.id}', '${m.tipo}')">
+                    <div class="mm-left">
+                        <span class="mm-time">${m.fechaObj.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'})}</span>
+                        <span class="mm-date-mini">${m.fechaObj.toLocaleDateString('es-ES', {day:'numeric', month:'short'}).toUpperCase()}</span>
+                    </div>
+                    <div class="mm-center">
+                        <div class="mm-tags">
+                            <span class="mm-status ${m.estado === 'jugado' ? 'played' : ((m.jugadores?.length || 0) < 4 ? 'open' : 'full')}">
+                                ${m.estado === 'jugado' ? 'FINAL' : ((m.jugadores?.length || 0) < 4 ? 'ABIERTA' : 'COMPLETA')}
+                            </span>
+                            <span style="font-size:0.5rem; font-weight:800; opacity:0.6">${m.tipo.toUpperCase()}</span>
+                        </div>
+                        <div class="mm-participants" style="font-size:0.6rem; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px; margin-top:2px; font-weight:700">
+                            ${pText.toUpperCase()}
+                        </div>
+                    </div>
+                    <div class="mm-right">
+                        ${m.restriccionNivel ? `<span class="text-2xs opacity-40">NV ${m.restriccionNivel.min}-${m.restriccionNivel.max}</span>` : ''}
+                        <i class="fas fa-chevron-right mm-arrow"></i>
+                    </div>
+                </div>
+            `;
+        }));
+
+        list.innerHTML = htmlArray.join('');
+    }
+
+    // --- Global Helpers ---
+    window.openMatchModalHome = async (id, type) => {
+        const modal = document.getElementById('modal-partido-universal');
+        const container = document.getElementById('modal-cuerpo');
+        if (!modal || !container) return;
+        
+        modal.classList.add('active');
+        container.innerHTML = '<div class="loader-ring-container"><div class="spinner-small"></div></div>';
+        
+        try {
+            const colName = type === 'reto' ? 'partidosReto' : 'partidosAmistosos';
+            const snap = await getDocument(colName, id);
+            if (snap) {
+                await renderMatchDetailsShared(container, { id, ...snap }, currentUser, userData);
+            } else {
+                container.innerHTML = '<p class="p-4 text-center">Partido no encontrado.</p>';
+            }
+        } catch (e) {
+            console.error(e);
+            container.innerHTML = '<p class="p-4 text-center">Error al cargar.</p>';
+        }
+    };
+
+    window.closeMatchModal = () => {
+        document.getElementById('modal-partido-universal')?.classList.remove('active');
+        closeChatSubscription();
+    };
+
+    // Notification Dot
+    if (auth.currentUser) {
+        const q = query(collection(db, "notificaciones"), where("uid", "==", auth.currentUser.uid), where("read", "==", false));
+        onSnapshot(q, (snap) => {
+            const dot = document.getElementById('header-notif-dot');
+            if (dot) dot.style.display = snap.empty ? 'none' : 'block';
+        });
+    }
 });

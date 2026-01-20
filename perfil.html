@@ -5,638 +5,889 @@
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Perfil Pro | Padeluminatis</title>
+    <meta name="theme-color" content="#030508">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Perfil | Padeluminatis</title>
+    <link rel="icon" type="image/x-icon" href="./imagenes/Logojafs.png">
+    <link rel="apple-touch-icon" href="./imagenes/Logojafs.png">
+    <link rel="manifest" href="./manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Rajdhani:wght@500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Rajdhani:wght@500;600;700;800&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="./css/design-system-v3.css">
     <link rel="stylesheet" href="./css/app.css">
     <link rel="stylesheet" href="./css/shared-utils.css">
     <link rel="stylesheet" href="./css/bottom-nav.css">
+    <link rel="stylesheet" href="./css/match-modal-v2.css">
     <style>
-        :root {
-            --profile-glow: rgba(255, 107, 53, 0.3);
-        }
-
         .profile-hero {
-            padding: 3.5rem 1.5rem 2rem;
+            padding: 4rem 1.5rem 3rem;
             text-align: center;
-            background: radial-gradient(circle at top, rgba(255, 107, 53, 0.1) 0%, transparent 70%);
+            background: radial-gradient(circle at top, rgba(var(--primary-rgb), 0.15) 0%, transparent 70%);
             position: relative;
         }
 
-        .avatar-wrap-pro {
+        .profile-avatar-container {
             position: relative;
-            width: 130px;
-            height: 130px;
+            width: 140px;
+            height: 140px;
             margin: 0 auto 1.5rem;
         }
 
-        .avatar-main {
+        .profile-avatar-large {
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            border: 3px solid var(--primary);
-            box-shadow: 0 0 30px var(--profile-glow);
-            background: #0d0e12;
+            border: 4px solid var(--primary);
+            box-shadow: 0 0 40px var(--primary-glow);
+            background: var(--bg-body);
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
+            transition: var(--transition);
         }
 
-        .avatar-main img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .edit-badge {
+        .avatar-edit-badge {
             position: absolute;
             bottom: 5px;
             right: 5px;
-            width: 38px;
-            height: 38px;
+            width: 36px;
+            height: 36px;
             background: var(--primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            border: 4px solid #050608;
+            border: 3px solid var(--bg-body);
             cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-            transition: 0.3s;
+            transition: var(--transition-bounce);
         }
 
-        .edit-badge:hover {
+        .avatar-edit-badge:hover {
             transform: scale(1.1);
         }
 
         .profile-name {
             font-family: 'Rajdhani';
-            font-size: 2.2rem;
+            font-size: 2.5rem;
             font-weight: 800;
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.5rem;
             text-transform: uppercase;
+        }
+
+        .profile-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(var(--primary-rgb), 0.1);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-full);
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.8rem;
             letter-spacing: 1px;
         }
 
-        .role-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 14px;
-            background: rgba(255, 107, 53, 0.1);
-            border: 1px solid rgba(255, 107, 53, 0.2);
-            border-radius: 20px;
-            color: var(--primary);
-            font-weight: 800;
-            font-size: 0.7rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        /* Stats Dashboard */
-        .stats-dashboard {
+        .profile-stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 12px;
-            margin-top: 2rem;
-            padding: 0 10px;
+            margin-top: 2.5rem;
         }
 
-        .stat-card-neon {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 18px;
-            padding: 15px 10px;
+        .p-stat-box {
+            background: var(--bg-surface-2);
+            padding: 1.2rem 0.8rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: 0.3s;
         }
 
-        .stat-card-neon span:first-child {
+        .p-stat-val {
             display: block;
             font-family: 'Rajdhani';
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: var(--primary);
-            margin-bottom: 2px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1;
+            margin-bottom: 4px;
         }
 
-        .stat-card-neon span:last-child {
-            font-size: 0.6rem;
+        .p-stat-lab {
+            font-size: 0.65rem;
+            color: var(--text-muted);
             text-transform: uppercase;
-            font-weight: 800;
-            opacity: 0.4;
+            font-weight: 600;
             letter-spacing: 1px;
         }
 
-        /* Settings Rows */
-        .settings-container {
-            padding: 0 1.5rem;
-            margin-top: 1rem;
-        }
-
-        .setting-group-title {
-            font-family: 'Rajdhani';
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: var(--primary);
-            margin: 2.5rem 0 1rem;
+        .section-header {
             display: flex;
             align-items: center;
             gap: 10px;
-            text-transform: uppercase;
+            margin: 2.5rem 0 1rem;
+            font-family: 'Rajdhani';
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
         }
 
-        .item-neo {
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 15px 20px;
+        .section-header i {
+            font-size: 1rem;
+            opacity: 0.7;
+        }
+
+        .settings-group {
+            background: var(--bg-glass);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .setting-item {
+            padding: 1.2rem 1rem;
             display: flex;
             align-items: center;
             gap: 15px;
-            margin-bottom: 12px;
-            transition: 0.3s;
+            border-bottom: 1px solid var(--border);
         }
 
-        .item-neo:hover {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(255, 255, 255, 0.1);
+        .setting-item:last-child {
+            border-bottom: none;
         }
 
-        .item-neo i {
-            font-size: 1.2rem;
-            opacity: 0.4;
-            width: 25px;
-            text-align: center;
+        .setting-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            flex-shrink: 0;
         }
 
-        .item-neo-content {
+        .setting-content {
             flex: 1;
         }
 
-        .item-neo-label {
+        .setting-label {
             display: block;
-            font-size: 0.65rem;
-            font-weight: 800;
-            opacity: 0.4;
-            text-transform: uppercase;
+            font-size: 0.75rem;
+            color: var(--text-muted);
             margin-bottom: 2px;
-        }
-
-        .item-neo-val {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #eee;
-        }
-
-        .form-input-neo {
-            background: transparent;
-            border: none;
-            color: #fff;
-            width: 100%;
-            font-family: inherit;
-            font-size: 0.95rem;
-            font-weight: 600;
-            outline: none;
-        }
-
-        /* Location Grid */
-        .location-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-
-        .location-box {
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 10px;
-            text-align: center;
-        }
-
-        .location-box select {
-            background: transparent;
-            border: none;
-            color: #fff;
-            width: 100%;
-            text-align: center;
-            font-weight: 800;
-            font-family: 'Rajdhani';
-            font-size: 1.1rem;
-            outline: none;
-            -webkit-appearance: none;
-            appearance: none;
-        }
-
-        .location-box select option {
-            background: #1a1e26;
-            color: #fff;
-        }
-
-        .btn-modern {
-            width: 100%;
-            padding: 16px;
-            border-radius: 18px;
-            border: none;
-            font-family: 'Rajdhani';
-            font-weight: 800;
-            font-size: 1rem;
-            letter-spacing: 1px;
             text-transform: uppercase;
-            cursor: pointer;
-            transition: 0.3s;
+            font-weight: 600;
         }
 
-        .btn-primary-neo {
-            background: var(--primary);
-            color: #fff;
-            box-shadow: 0 5px 20px var(--profile-glow);
-        }
-
-        .btn-danger-neo {
-            background: rgba(255, 59, 48, 0.1);
-            color: #ff3b30;
-            border: 1px solid rgba(255, 59, 48, 0.2);
-            margin-top: 2rem;
-        }
-
-        .btn-danger-neo:hover {
-            background: #ff3b30;
+        .setting-value {
+            font-weight: 500;
             color: #fff;
         }
 
-        #history-mini-btn {
-            background: rgba(0, 195, 255, 0.1);
-            color: #00c3ff;
-            border: 1px solid rgba(0, 195, 255, 0.2);
+        .form-control-pro {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: inherit;
+            font-size: 1rem;
+            padding: 0;
+        }
+
+        .form-control-pro:focus {
+            outline: none;
+        }
+
+        .btn-logout-floating {
+            margin-top: 3rem;
+            background: rgba(255, 23, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(255, 23, 68, 0.2);
+            width: 100%;
+            padding: 15px;
+            border-radius: var(--radius-md);
+            font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            margin-top: 2rem;
+            transition: var(--transition);
+        }
+
+        .btn-logout-floating:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        #password-modal .modal-content {
+            background: var(--bg-glass-strong);
+            padding: 2rem;
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-primary);
+            max-width: 90%;
+            width: 400px;
+        }
+
+        /* Profile Premium Styles */
+        .stat-card-premium {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-card-premium:hover {
+            transform: translateY(-8px);
+            background: rgba(255, 107, 53, 0.08);
+            border-color: rgba(255, 107, 53, 0.3);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            opacity: 0.5;
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        .adv-stat-box {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .adv-stat-box:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .adv-label {
+            font-size: 0.6rem;
+            font-weight: 800;
+            opacity: 0.4;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .adv-value {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .profile-avatar-container {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            margin: 0 auto;
+        }
+
+        .edit-photo-btn {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 35px;
+            height: 35px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            border: 3px solid #050608;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .edit-photo-btn:hover {
+            transform: scale(1.1);
         }
     </style>
 </head>
 
-<body class="app-body">
-    <div id="particles-js" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></div>
-
-    <header class="app-header">
-        <div class="header-left">
-            <h1 class="header-title">
-                <span class="title-main">PERFIL</span>
-                <span class="title-dot">.</span>
-            </h1>
+<!-- Header Standardized for Perfil -->
+<header class="app-header"
+    style="position: absolute; top: 0; left: 0; width: 100%; z-index: 100; background: transparent; box-shadow: none;">
+    <div class="header-left flex-center gap-2" style="padding: 15px;">
+        <a href="home.html" style="color: white; font-size: 1.2rem;"><i class="fas fa-arrow-left"></i></a>
+    </div>
+    <div class="header-right" style="padding: 15px;">
+        <!-- Actions if needed -->
+    </div>
+</header>
+<div class="profile-hero">
+    <div class="profile-avatar-container">
+        <div class="profile-avatar-large" id="profile-avatar">
+            <div class="loading-spinner" style="width:30px; height:30px;"></div>
         </div>
-        <div class="header-right">
-            <a href="notificaciones.html" class="notification-bell">
-                <i class="fas fa-bell"></i>
-                <span class="notification-dot"></span>
-            </a>
-            <div id="header-avatar-container"></div>
+        <div class="avatar-edit-badge" id="btn-edit-photo-trigger" title="Cambiar foto">
+            <i class="fas fa-camera"></i>
         </div>
-    </header>
+        <input type="file" id="photo-upload-input" accept="image/*" style="display: none;">
+    </div>
+    <h2 id="p-name" class="profile-name">Cargando...</h2>
+    <div class="profile-status">
+        <i class="fas fa-shield-halved"></i>
+        <span id="p-role">JUGADOR</span>
+    </div>
 
-    <main class="container" style="padding: 0; padding-bottom: 120px;">
+    <div class="profile-stats-grid">
+        <div class="p-stat-box">
+            <span id="p-nivel" class="p-stat-val">--</span>
+            <span class="p-stat-lab">Nivel</span>
+        </div>
+        <div class="p-stat-box">
+            <span id="p-elo" class="p-stat-val">--</span>
+            <span class="p-stat-lab">Puntos</span>
+        </div>
+        <div class="p-stat-box">
+            <span id="p-winrate" class="p-stat-val">--%</span>
+            <span class="p-stat-lab">Win Rate</span>
+        </div>
+    </div>
+</div>
 
-        <div class="profile-hero">
-            <div class="avatar-wrap-pro">
-                <div class="avatar-main" id="p-avatar-main">
-                    <div class="spinner-small"></div>
-                </div>
-                <div class="edit-badge" id="btn-edit-photo">
-                    <i class="fas fa-camera"></i>
-                </div>
-                <input type="file" id="photo-upload" accept="image/*" style="display: none;">
-            </div>
-
-            <h1 class="profile-name" id="p-display-name">---</h1>
-            <div class="role-tag">
-                <i class="fas fa-shield-halved"></i>
-                <span id="p-display-role">Cargando...</span>
-            </div>
-
-            <div class="stats-dashboard">
-                <div class="stat-card-neon">
-                    <span id="p-val-lvl">--</span>
-                    <span>Nivel</span>
-                </div>
-                <div class="stat-card-neon">
-                    <span id="p-val-pts">--</span>
-                    <span>Puntos</span>
-                </div>
-                <div class="stat-card-neon">
-                    <span id="p-val-wr">--%</span>
-                    <span>Win Rate</span>
-                </div>
+<div style="padding: 0 var(--space-md);">
+    <!-- Advanced Stats -->
+    <div class="section-header">
+        <i class="fas fa-chart-line"></i> ESTADÍSTICAS AVANZADAS
+    </div>
+    <div class="settings-group">
+        <div class="setting-item">
+            <div class="setting-icon"><i class="fas fa-trophy text-success"></i></div>
+            <div class="setting-content">
+                <span class="setting-label">Víctima favorita</span>
+                <span id="p-target" class="setting-value">---</span>
             </div>
         </div>
-
-        <div class="settings-container">
-
-            <div class="setting-group-title">
-                <i class="fas fa-chart-line"></i> Estadísticas Avanzadas
+        <div class="setting-item">
+            <div class="setting-icon"><i class="fas fa-skull text-danger"></i></div>
+            <div class="setting-content">
+                <span class="setting-label">Némesis (Más derrotas)</span>
+                <span id="p-nemesis" class="setting-value">---</span>
             </div>
-
-            <div class="item-neo">
-                <i class="fas fa-bullseye text-success"></i>
-                <div class="item-neo-content">
-                    <span class="item-neo-label">VÍCTIMA FAVORITA</span>
-                    <span class="item-neo-val" id="p-adv-victim">---</span>
-                </div>
-            </div>
-
-            <div class="item-neo">
-                <i class="fas fa-skull text-danger"></i>
-                <div class="item-neo-content">
-                    <span class="item-neo-label">NÉMESIS PRINCIPAL</span>
-                    <span class="item-neo-val" id="p-adv-nemesis">---</span>
-                </div>
-            </div>
-
-            <div class="item-neo">
-                <i class="fas fa-handshake text-info"></i>
-                <div class="item-neo-content">
-                    <span class="item-neo-label">MEJOR COMPAÑERO</span>
-                    <span class="item-neo-val" id="p-adv-partner">---</span>
-                </div>
-            </div>
-
-            <div class="setting-group-title">
-                <i class="fas fa-user-circle"></i> Datos del Usuario
-            </div>
-
-            <div class="item-neo">
-                <i class="fas fa-id-card"></i>
-                <div class="item-neo-content">
-                    <span class="item-neo-label">Nombre del Jugador</span>
-                    <input type="text" id="input-edit-name" class="form-input-neo" placeholder="Tu nombre...">
-                </div>
-                <button id="btn-save-name" class="btn-icon" style="color:var(--primary)"><i
-                        class="fas fa-save"></i></button>
-            </div>
-
-            <div class="item-neo">
-                <i class="fas fa-location-arrow"></i>
-                <div class="item-neo-content">
-                    <span class="item-neo-label">Posición Favorita</span>
-                    <select id="p-sel-posicion" class="form-input-neo"
-                        style="background:transparent; border:none; color:#fff; cursor:pointer;">
-                        <option value="Derecha">DERECHA</option>
-                        <option value="Revés">REVÉS</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="item-neo">
-                <i class="fas fa-envelope"></i>
-                <div class="item-neo-content">
-                    <span class="item-neo-label">Email Registrado</span>
-                    <span class="item-neo-val" id="p-val-email">---</span>
-                </div>
-            </div>
-
-            <div class="setting-group-title">
-                <i class="fas fa-location-dot"></i> Ubicación Benicalap
-            </div>
-
-            <div class="location-grid">
-                <div class="location-box">
-                    <span class="item-neo-label">BLOQUE</span>
-                    <select id="p-sel-bloque">
-                        <option value="">A --</option>
-                        <option value="A1">A1</option>
-                        <option value="A2">A2</option>
-                        <option value="A3">A3</option>
-                        <option value="A4">A4</option>
-                        <option value="A5">A5</option>
-                        <option value="A6">A6</option>
-                    </select>
-                </div>
-                <div class="location-box">
-                    <span class="item-neo-label">PISO</span>
-                    <select id="p-sel-piso">
-                        <option value="">--</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                    </select>
-                </div>
-                <div class="location-box">
-                    <span class="item-neo-label">PUERTA</span>
-                    <select id="p-sel-puerta">
-                        <option value="">-</option>
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="C">C</option>
-                        <option value="D">D</option>
-                        <option value="E">E</option>
-                        <option value="F">F</option>
-                    </select>
-                </div>
-            </div>
-
-            <button class="btn-modern btn-primary-neo" id="btn-save-addr">
-                Guardar Dirección <i class="fas fa-check-circle ms-2"></i>
-            </button>
-
-            <button class="btn-modern" id="history-mini-btn" onclick="window.location.href='partidos.html'">
-                <i class="fas fa-history"></i> Ver Historial Completo
-            </button>
-
-            <button class="btn-modern btn-danger-neo" id="btn-logout-pro">
-                Cerrar Sesión Activa <i class="fas fa-power-off ms-2"></i>
-            </button>
-
         </div>
-    </main>
+        <div class="setting-item">
+            <div class="setting-icon"><i class="fas fa-handshake text-info"></i></div>
+            <div class="setting-content">
+                <span class="setting-label">Mejor Compañero</span>
+                <span id="p-best-partner" class="setting-value">---</span>
+            </div>
+        </div>
+        <div class="setting-item">
+            <div class="setting-icon"><i class="fas fa-heart-crack text-warning"></i></div>
+            <div class="setting-content">
+                <span class="setting-label">Mayor derrota</span>
+                <span id="p-worst-loss" class="setting-value">---</span>
+            </div>
+        </div>
+    </div>
 
-    <nav class="bottom-nav glass">
-        <a href="home.html" class="nav-link"><i class="fas fa-home"></i><span>Inicio</span></a>
-        <a href="calendario.html" class="nav-link"><i class="fas fa-calendar-alt"></i><span>Reserva</span></a>
-        <a href="puntosRanking.html" class="nav-fab"><i class="fas fa-trophy"></i></a>
-        <a href="eventos.html" class="nav-link"><i class="fas fa-medal"></i><span>Eventos</span></a>
-        <a href="perfil.html" class="nav-link active"><i class="fas fa-user-astronaut"></i><span>Perfil</span></a>
-    </nav>
+    <div class="section-header">
+        <i class="fas fa-user-pen"></i> DATOS PERSONALES
+    </div>
+    <div class="settings-group">
+        <div class="setting-item">
+            <div class="setting-icon"><i class="fas fa-signature"></i></div>
+            <div class="setting-content">
+                <span class="setting-label">Nombre de Usuario</span>
+                <input type="text" id="edit-name-input" class="form-control-pro" placeholder="Tu nombre...">
+            </div>
+            <button id="btn-save-name" class="btn-icon text-primary"><i class="fas fa-save"></i></button>
+        </div>
+        <div class="setting-item">
+            <div class="setting-icon"><i class="fas fa-envelope"></i></div>
+            <div class="setting-content">
+                <span class="setting-label">Email de acceso</span>
+                <span id="p-email" class="setting-value">---</span>
+            </div>
+        </div>
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-    <script type="module" src="./js/particles-init.js"></script>
-    <script type="module">
-        import { auth, db, storage } from './js/firebase-config.js';
-        import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.7.3/firebase-auth.js';
-        import { doc, getDoc, getDocs, updateDoc, collection, query, where } from 'https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js';
-        import { ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/11.7.3/firebase-storage.js';
-        import { authGuard, initSharedUI } from './js/ui-core.js';
+    <div class="section-header">
+        <i class="fas fa-map-marker-alt"></i> UBICACIÓN
+    </div>
+    <div class="settings-group">
+        <div class="address-grid"
+            style="display: grid; grid-template-columns: 1fr 1fr 1fr; border-bottom: 1px solid var(--border);">
+            <div style="padding: 1rem; border-right: 1px solid var(--border);">
+                <label class="setting-label">Bloque</label>
+                <select id="p-bloque" class="form-select-premium">
+                    <option value="">--</option>
+                    <option value="A1">A1</option>
+                    <option value="A2">A2</option>
+                    <option value="A3">A3</option>
+                    <option value="A4">A4</option>
+                    <option value="A5">A5</option>
+                    <option value="A6">A6</option>
+                </select>
+            </div>
+            <div style="padding: 1rem; border-right: 1px solid var(--border);">
+                <label class="setting-label">Piso</label>
+                <select id="p-piso" class="form-select-premium">
+                    <option value="">--</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                </select>
+            </div>
+            <div style="padding: 1rem;">
+                <label class="setting-label">Puerta</label>
+                <select id="p-puerta" class="form-select-premium">
+                    <option value="">--</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                    <option value="E">E</option>
+                    <option value="F">F</option>
+                </select>
+            </div>
+        </div>
+        <button id="btn-save-address" class="btn btn-primary w-100"
+            style="border-radius: 0; padding: 12px; font-weight: 800; font-size: 0.75rem;">
+            GUARDAR DIRECCIÓN <i class="fas fa-save ms-1"></i>
+        </button>
+    </div>
 
-        authGuard();
-        initSharedUI('Perfil');
+    <div class="section-header">
+        <i class="fas fa-shield-alt"></i> SEGURIDAD
+    </div>
+    <div class="settings-group">
+        <div class="setting-item" id="btn-change-password" style="cursor: pointer;">
+            <div class="setting-icon"><i class="fas fa-key"></i></div>
+            <div class="setting-content">
+                <span class="setting-label">Contraseña</span>
+                <span class="setting-value">Cambiar mi contraseña</span>
+            </div>
+            <i class="fas fa-chevron-right opacity-30"></i>
+        </div>
+    </div>
 
-        let userUid = null;
-        let allUsers = {};
+    <div id="p-history-btn" class="btn btn-secondary w-100 mb-4"
+        style="padding: 15px; border-radius: 12px; font-weight: 800;">
+        <i class="fas fa-history"></i> VER HISTORIAL COMPLETO
+    </div>
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                userUid = user.uid;
+    <button id="btn-logout" class="btn-logout-floating">
+        <i class="fas fa-power-off"></i> CERRAR SESIÓN
+    </button>
+</div>
+</main>
+
+<!-- Modal Historial -->
+<div id="modal-historial" class="selector-overlay" style="z-index: 2000;">
+    <div class="selector-header">
+        <h3 class="modal-title">HISTORIAL DE PARTIDOS</h3>
+        <button class="close-btn"
+            onclick="document.getElementById('modal-historial').classList.remove('active')">&times;</button>
+    </div>
+    <div id="history-list" class="p-3" style="max-height: 80vh; overflow-y: auto;">
+        <!-- Matches injected here -->
+    </div>
+</div>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+    <a href="home.html" class="nav-link">
+        <i class="fas fa-home"></i>
+        <span>INICIO</span>
+    </a>
+    <a href="calendario.html" class="nav-link">
+        <i class="fas fa-calendar-alt"></i>
+        <span>RESERVAS</span>
+    </a>
+    <a href="puntosRanking.html" class="nav-fab">
+        <i class="fas fa-trophy"></i>
+    </a>
+    <a href="eventos.html" class="nav-link">
+        <i class="fas fa-bolt"></i>
+        <span>EVENTOS</span>
+    </a>
+    <a href="partidos.html" class="nav-link">
+        <i class="fas fa-table-tennis"></i>
+        <span>PARTIDOS</span>
+    </a>
+</nav>
+
+<!-- UI Core Logic -->
+<script type="module">
+    import { auth, db, storage } from './js/firebase-config.js';
+    import {
+        onAuthStateChanged, signOut, updatePassword,
+        EmailAuthProvider, reauthenticateWithCredential
+    } from 'https://www.gstatic.com/firebasejs/11.7.3/firebase-auth.js';
+    import {
+        doc, getDoc, getDocs, updateDoc, collection, query, where, orderBy
+    } from 'https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js';
+    import {
+        ref, uploadBytes, getDownloadURL
+    } from 'https://www.gstatic.com/firebasejs/11.7.3/firebase-storage.js';
+    import { authGuard, initSharedUI } from './js/ui-core.js';
+
+    authGuard();
+    initSharedUI('PERFIL');
+
+    let userUid = null;
+    let currentUser = null;
+    let fullMatchHistory = [];
+    let allUsersMap = {};
+
+    onAuthStateChanged(auth, async (user) => {
+        console.log("👤 [Profile] Auth state changed:", user ? user.uid : "Offline");
+        if (user) {
+            currentUser = user;
+            userUid = user.uid;
+            try {
+                console.log("📡 [Profile] Loading users map...");
                 await loadAllUsers();
-                await loadCoreProfile();
-                await calcAdvancedStats();
-            } else {
-                window.location.href = 'index.html';
+            } catch (e) {
+                console.warn("Could not load all users.");
+            }
+
+            try {
+                console.log("📡 [Profile] Loading stats/details...");
+                await loadProfileData(user.uid);
+                await loadAdvancedStats(user.uid);
+                console.log("✅ [Profile] All data loaded.");
+            } catch (e) {
+                console.error("❌ [Profile] Failed to load profile data:", e);
+            }
+        } else {
+            console.warn("⚠️ [Profile] User not logged in, redirecting...");
+            window.location.href = 'index.html';
+        }
+    });
+
+    async function loadProfileData(uid) {
+        const docSnap = await getDoc(doc(db, 'usuarios', uid));
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            document.getElementById('p-name').textContent = data.nombreUsuario || data.nombre || 'Sin nombre';
+            document.getElementById('edit-name-input').value = data.nombreUsuario || data.nombre || '';
+            document.getElementById('p-email').textContent = data.email;
+            document.getElementById('p-nivel').textContent = data.nivel || '1.5';
+            document.getElementById('p-elo').textContent = Math.round(data.puntosRankingTotal || data.puntosRanking || 0);
+            document.getElementById('p-role').textContent = (data.rol || 'JUGADOR').toUpperCase();
+            document.getElementById('p-streak').textContent = data.rachaActual || 0;
+            document.getElementById('p-fp').textContent = data.familyPoints || data.puntosFamily || 0;
+
+            if (data.direccion) {
+                document.getElementById('p-bloque').value = data.direccion.bloque || '';
+                document.getElementById('p-piso').value = data.direccion.piso || '';
+                document.getElementById('p-puerta').value = data.direccion.puerta || '';
+            }
+            updateAvatarUI(data);
+        }
+    }
+
+    async function loadAllUsers() {
+        const snap = await getDocs(collection(db, 'usuarios'));
+        snap.forEach(d => allUsersMap[d.id] = d.data());
+    }
+
+
+    async function loadAdvancedStats(uid) {
+        const collections = ['partidosAmistosos', 'partidosReto'];
+        let matches = [];
+
+        for (const col of collections) {
+            const snap = await getDocs(query(
+                collection(db, col),
+                where("jugadores", "array-contains", uid),
+                where("estado", "==", "jugado")
+            ));
+            snap.forEach(d => matches.push({ id: d.id, ...d.data() }));
+        }
+
+        fullMatchHistory = matches.sort((a, b) => (b.fecha?.seconds || 0) - (a.fecha?.seconds || 0));
+
+        let wins = 0; let losses = 0;
+        let rivalStats = {};
+        let partnerStats = {};
+        let worstLoss = { diff: -1, score: '', date: '' };
+
+        // Connect save address button
+        const addrBtn = document.getElementById('btn-save-address');
+        if (addrBtn) {
+            addrBtn.onclick = async () => {
+                const bloque = document.getElementById('p-bloque').value;
+                const piso = document.getElementById('p-piso').value;
+                const puerta = document.getElementById('p-puerta').value;
+                try {
+                    const originalText = addrBtn.innerHTML;
+                    addrBtn.innerHTML = '<div class="spinner-small" style="width:14px; height:14px;"></div>';
+
+                    await updateDoc(doc(db, 'usuarios', userUid), {
+                        direccion: { bloque, piso, puerta }
+                    });
+
+                    addrBtn.innerHTML = '<i class="fas fa-check"></i> GUARDADO';
+                    addrBtn.classList.add('btn-success');
+                    setTimeout(() => {
+                        addrBtn.innerHTML = originalText;
+                        addrBtn.classList.remove('btn-success');
+                    }, 2000);
+
+                } catch (e) {
+                    console.error(e);
+                    alert("Error al guardar dirección");
+                    addrBtn.innerHTML = 'ERROR AL GUARDAR';
+                }
+            };
+        }
+
+        // Stats Calculation Loop
+        matches.forEach(m => {
+            const pos = m.jugadores.indexOf(uid);
+            const isTeam1 = pos < 2;
+
+            let sets1 = 0; let sets2 = 0;
+            if (m.resultado?.sets) {
+                const parts = m.resultado.sets.split('-');
+                sets1 = parseInt(parts[0]);
+                sets2 = parseInt(parts[1]);
+            }
+
+            const won = isTeam1 ? (sets1 > sets2) : (sets2 > sets1);
+            if (won) wins++; else losses++;
+
+            const rivals = isTeam1 ? [m.jugadores[2], m.jugadores[3]] : [m.jugadores[0], m.jugadores[1]];
+            rivals.forEach(rid => {
+                if (!rid || rid.startsWith('GUEST_')) return;
+                if (!rivalStats[rid]) rivalStats[rid] = { won: 0, lost: 0 };
+                if (won) rivalStats[rid].won++; else rivalStats[rid].lost++;
+            });
+
+            const partner = isTeam1 ? (pos === 0 ? m.jugadores[1] : m.jugadores[0]) : (pos === 2 ? m.jugadores[3] : m.jugadores[2]);
+            if (partner && !partner.startsWith('GUEST_')) {
+                if (!partnerStats[partner]) partnerStats[partner] = { won: 0, lost: 0 };
+                if (won) partnerStats[partner].won++; else partnerStats[partner].lost++;
+            }
+
+            if (!won) {
+                const diff = Math.abs(sets1 - sets2);
+                if (diff > worstLoss.diff) {
+                    worstLoss = { diff, score: m.resultado.sets, date: m.fecha };
+                }
             }
         });
 
-        async function loadAllUsers() {
-            const snap = await getDocs(collection(db, 'usuarios'));
-            snap.forEach(d => allUsers[d.id] = { ...d.data(), id: d.id });
+        // Update UI
+        const total = wins + losses;
+        const wr = total > 0 ? Math.round((wins / total) * 100) : 0;
+        document.getElementById('p-winrate').textContent = wr + '%';
+
+        // Nemesis, Target & Best Partner
+        let nemesis = { id: null, count: -1 };
+        let target = { id: null, count: -1 };
+        let bestPartner = { id: null, count: -1 };
+
+        for (const rid in rivalStats) {
+            if (rivalStats[rid].lost > nemesis.count) nemesis = { id: rid, count: rivalStats[rid].lost };
+            if (rivalStats[rid].won > target.count) target = { id: rid, count: rivalStats[rid].won };
+        }
+        for (const pid in partnerStats) {
+            if (partnerStats[pid].won > bestPartner.count) bestPartner = { id: pid, count: partnerStats[pid].won };
         }
 
-        async function loadCoreProfile() {
-            const snap = await getDoc(doc(db, 'usuarios', userUid));
-            if (!snap.exists()) return;
-            const u = snap.data();
-
-            document.getElementById('p-display-name').textContent = u.nombreUsuario || u.nombre || 'Sin nombre';
-            document.getElementById('input-edit-name').value = u.nombreUsuario || u.nombre || '';
-            document.getElementById('p-display-role').textContent = u.rol || 'JUGADOR';
-            document.getElementById('p-val-lvl').textContent = (u.nivel || 2.0).toFixed(2);
-            document.getElementById('p-val-pts').textContent = Math.round(u.puntosRankingTotal || u.puntosRanking || 0);
-            document.getElementById('p-val-email').textContent = u.email || '---';
-
-            if (u.direccion) {
-                document.getElementById('p-sel-bloque').value = u.direccion.bloque || '';
-                document.getElementById('p-sel-piso').value = u.direccion.piso || '';
-                document.getElementById('p-sel-puerta').value = u.direccion.puerta || '';
-            }
-            if (u.posicion) {
-                document.getElementById('p-sel-posicion').value = u.posicion;
-            }
-
-            const avatarEl = document.getElementById('p-avatar-main');
-            if (avatarEl) avatarEl.innerHTML = renderAvatarShared(userUid, u, 'lg');
+        if (nemesis.id) {
+            const nUser = allUsersMap[nemesis.id];
+            document.getElementById('p-nemesis').textContent = (nUser?.nombreUsuario || 'Jugador') + ` (${nemesis.count})`;
         }
-
-        async function calcAdvancedStats() {
-            const cols = ['partidosAmistosos', 'partidosReto'];
-            let matches = [];
-            for (const c of cols) {
-                const q = query(collection(db, c), where("jugadores", "array-contains", userUid), where("estado", "==", "jugado"));
-                const snap = await getDocs(q);
-                snap.forEach(d => matches.push(d.data()));
-            }
-
-            if (matches.length === 0) return;
-
-            let wins = 0;
-            let rivalStats = {};
-            let partnerStats = {};
-
-            matches.forEach(m => {
-                const myPos = m.jugadores.indexOf(userUid);
-                const isT1 = myPos < 2;
-                const scores = (m.resultado?.sets || "0-0").split(' ')[0].split('-').map(Number);
-                const iWon = (isT1 && scores[0] > scores[1]) || (!isT1 && scores[1] > scores[0]);
-
-                if (iWon) wins++;
-
-                // Rivals
-                const rids = isT1 ? [m.jugadores[2], m.jugadores[3]] : [m.jugadores[0], m.jugadores[1]];
-                rids.forEach(rid => {
-                    if (!rid || rid.startsWith('GUEST')) return;
-                    if (!rivalStats[rid]) rivalStats[rid] = { w: 0, l: 0 };
-                    iWon ? rivalStats[rid].w++ : rivalStats[rid].l++;
-                });
-
-                // Partner
-                const pid = isT1 ? (myPos === 0 ? m.jugadores[1] : m.jugadores[0]) : (myPos === 2 ? m.jugadores[3] : m.jugadores[2]);
-                if (pid && !pid.startsWith('GUEST')) {
-                    if (!partnerStats[pid]) partnerStats[pid] = { w: 0, l: 0 };
-                    iWon ? partnerStats[pid].w++ : partnerStats[pid].l++;
-                }
-            });
-
-            document.getElementById('p-val-wr').textContent = (wins / matches.length * 100).toFixed(1) + '%';
-
-            // Find bests
-            const findTop = (stats, key) => {
-                let max = -1, bestId = null;
-                for (let id in stats) {
-                    if (stats[id][key] > max) { max = stats[id][key]; bestId = id; }
-                }
-                return bestId ? `${allUsers[bestId]?.nombreUsuario || 'Jugador'} (${max})` : '---';
-            };
-
-            document.getElementById('p-adv-victim').textContent = findTop(rivalStats, 'w');
-            document.getElementById('p-adv-nemesis').textContent = findTop(rivalStats, 'l');
-            document.getElementById('p-adv-partner').textContent = findTop(partnerStats, 'w');
+        if (target.id) {
+            const tUser = allUsersMap[target.id];
+            document.getElementById('p-target').textContent = (tUser?.nombreUsuario || 'Jugador') + ` (${target.count})`;
         }
-
-        function renderAvatar(u) {
-            const el = document.getElementById('p-avatar-main');
-            const url = u.fotoPerfil || u.fotoURL;
-            if (url) {
-                el.innerHTML = `<img src="${url}">`;
-            } else {
-                const initials = (u.nombreUsuario || u.nombre || '?').substring(0, 2).toUpperCase();
-                el.innerHTML = `<span style="font-family:'Rajdhani'; font-weight:800; font-size:2.8rem; color:var(--primary)">${initials}</span>`;
-            }
+        if (bestPartner.id) {
+            const bpUser = allUsersMap[bestPartner.id];
+            document.getElementById('p-best-partner').textContent = (bpUser?.nombreUsuario || 'Jugador') + ` (${bestPartner.count})`;
         }
+        if (worstLoss.diff !== -1) {
+            document.getElementById('p-worst-loss').textContent = worstLoss.score;
+        }
+    }
 
-        // --- ACTIONS ---
-        document.getElementById('btn-save-name').onclick = async () => {
-            const n = document.getElementById('input-edit-name').value.trim();
-            const pos = document.getElementById('p-sel-posicion').value;
-            if (!n) return;
-            await updateDoc(doc(db, 'usuarios', userUid), {
-                nombreUsuario: n,
-                posicion: pos
-            });
-            alert('Perfil actualizado con éxito');
-            location.reload();
-        };
+    function updateAvatarUI(data) {
+        const avatar = document.getElementById('profile-avatar');
+        const photoURL = data.fotoPerfil || data.fotoURL;
+        const name = data.nombreUsuario || data.nombre || 'Jugador';
 
-        document.getElementById('btn-save-addr').onclick = async () => {
-            const addr = {
-                bloque: document.getElementById('p-sel-bloque').value,
-                piso: document.getElementById('p-sel-piso').value,
-                puerta: document.getElementById('p-sel-puerta').value
-            };
-            await updateDoc(doc(db, 'usuarios', userUid), { direccion: addr });
-            alert('Ubicación guardada correctamente');
-        };
+        if (photoURL) {
+            avatar.innerHTML = `<img src="${photoURL}" style="width:100%; height:100%; object-fit:cover;">`;
+        } else {
+            const initials = (name[0] || '?').toUpperCase() + (name[1] || '').toUpperCase();
+            avatar.innerHTML = `<div style="font-size:3rem; font-weight:800; color:var(--primary); font-family:'Rajdhani'">${initials}</div>`;
+        }
+    }
 
-        document.getElementById('btn-logout-pro').onclick = async () => {
-            if (confirm('¿Seguro que quieres cerrar sesión?')) {
-                await signOut(auth);
-                window.location.href = 'index.html';
-            }
-        };
+    // Save Name
+    document.getElementById('btn-save-name').onclick = async () => {
+        const newName = document.getElementById('edit-name-input').value.trim();
+        if (newName) {
+            try {
+                await updateDoc(doc(db, 'usuarios', userUid), { nombreUsuario: newName });
+                alert('Nombre actualizado');
+                location.reload();
+            } catch (e) { alert('Error: ' + e.message); }
+        }
+    };
 
-        document.getElementById('btn-edit-photo').onclick = () => document.getElementById('photo-upload').click();
+    // Change Photo Logic with File Upload
+    const fileInput = document.getElementById('photo-upload-input');
+    const triggerBtn = document.getElementById('btn-edit-photo-trigger');
 
-        document.getElementById('photo-upload').onchange = async (e) => {
+    if (triggerBtn && fileInput) {
+        triggerBtn.onclick = () => fileInput.click();
+
+        fileInput.onchange = async (e) => {
             const file = e.target.files[0];
             if (!file) return;
-            const container = document.getElementById('p-avatar-main');
-            container.innerHTML = '<div class="spinner-small"></div>';
 
-            const sRef = ref(storage, `profiles/${userUid}/${Date.now()}.jpg`);
-            await uploadBytes(sRef, file);
-            const url = await getDownloadURL(sRef);
-            await updateDoc(doc(db, 'usuarios', userUid), { fotoPerfil: url, fotoURL: url });
-            location.reload();
+            if (file.size > 5 * 1024 * 1024) {
+                alert("La imagen es demasiado grande (Máx 5MB).");
+                return;
+            }
+
+            try {
+                // Show loading
+                const avatarContainer = document.getElementById('profile-avatar');
+                avatarContainer.innerHTML = '<div class="spinner-small"></div>';
+
+                // Upload to Storage
+                const storageRef = ref(storage, `profile_photos/${userUid}/profile_${Date.now()}.jpg`);
+                await uploadBytes(storageRef, file);
+                const downloadURL = await getDownloadURL(storageRef);
+
+                // Update Firestore
+                await updateDoc(doc(db, 'usuarios', userUid), {
+                    fotoPerfil: downloadURL,
+                    fotoURL: downloadURL
+                });
+
+                // Update UI
+                avatarContainer.innerHTML = `<img src="${downloadURL}" style="width:100%; height:100%; object-fit:cover;">`;
+                // Reload to ensure consistency elsewhere
+                setTimeout(() => location.reload(), 1000);
+
+            } catch (error) {
+                console.error("Error uploading photo:", error);
+                alert("Error al subir la imagen: " + error.message);
+                location.reload();
+            }
         };
+    }
 
-    </script>
+    window.saveAddress = async () => {
+        const bloque = document.getElementById('p-bloque').value;
+        const piso = document.getElementById('p-piso').value;
+        const puerta = document.getElementById('p-puerta').value;
+        try {
+            await updateDoc(doc(db, 'usuarios', userUid), {
+                direccion: { bloque, piso, puerta }
+            });
+            alert('Dirección guardada!');
+        } catch (e) { console.error(e); }
+    };
+
+    window.logout = async () => {
+        if (confirm('¿Cerrar sesión?')) {
+            await signOut(auth);
+            window.location.href = 'index.html';
+        }
+    };
+
+    // History Modal
+    document.getElementById('p-history-btn').onclick = () => {
+        const modal = document.getElementById('modal-historial');
+        const list = document.getElementById('history-list');
+        modal.classList.add('active');
+
+        if (fullMatchHistory.length === 0) {
+            list.innerHTML = '<p class="text-center opacity-50">No hay partidos jugados.</p>';
+            return;
+        }
+
+        list.innerHTML = fullMatchHistory.map(m => {
+            const date = m.fecha?.toDate ? m.fecha.toDate() : new Date();
+            const isTeam1 = m.jugadores.indexOf(userUid) < 2;
+            const win = m.resultado?.sets ? (isTeam1 ? parseInt(m.resultado.sets.split('-')[0]) > parseInt(m.resultado.sets.split('-')[1]) : parseInt(m.resultado.sets.split('-')[1]) > parseInt(m.resultado.sets.split('-')[0])) : false;
+
+            return `
+                    <div class="glass-strong p-3 mb-2 rounded-lg border-l-4 ${win ? 'border-success' : 'border-danger'} flex-between align-center">
+                        <div>
+                            <div class="text-2xs opacity-50">${date.toLocaleDateString()}</div>
+                            <div class="font-bold text-xs">${m.tipo.toUpperCase()}</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="font-bold" style="font-size: 1.2rem; font-family:'Rajdhani'">${m.resultado?.sets || '0-0'}</div>
+                            <div class="text-3xs ${win ? 'text-success' : 'text-danger'} font-bold">${win ? 'VICTORIA' : 'DERROTA'}</div>
+                        </div>
+                    </div>
+                `;
+        }).join('');
+    };
+
+    // Remaining actions
+    document.getElementById('btn-save-address').onclick = async () => {
+        const bloque = document.getElementById('p-bloque').value;
+        const piso = document.getElementById('p-piso').value;
+        const puerta = document.getElementById('p-puerta').value;
+        try {
+            await updateDoc(doc(db, 'usuarios', userUid), { direccion: { bloque, piso, puerta } });
+            alert('Guardado');
+        } catch (e) { alert('Error'); }
+    };
+
+    document.getElementById('btn-change-password').onclick = async () => {
+        const oldPass = prompt('Contraseña actual:');
+        if (!oldPass) return;
+        try {
+            const credential = EmailAuthProvider.credential(currentUser.email, oldPass);
+            await reauthenticateWithCredential(currentUser, credential);
+            const newPass = prompt('Nueva contraseña (mín 6):');
+            if (newPass?.length >= 6) {
+                await updatePassword(currentUser, newPass);
+                alert('¡Éxito!');
+            }
+        } catch (e) { alert('Verifica tus datos'); }
+    };
+
+    document.getElementById('btn-logout').onclick = () => signOut(auth);
+</script>
 </body>
 
 </html>

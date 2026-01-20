@@ -138,9 +138,6 @@ export async function setAuthPersistence(persistenceType) {
     return setPersistence(auth, persistence);
 }
 
-// Set local persistence by default to keep session active
-setPersistence(auth, browserLocalPersistence).catch(e => console.error("Persistence error:", e));
-
 /**
  * Signs out the current user.
  * @returns {Promise<void>} A promise that resolves when the user is signed out.

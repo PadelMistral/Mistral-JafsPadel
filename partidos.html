@@ -5,873 +5,206 @@
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Analysis Pro | Padeluminatis</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <meta name="theme-color" content="#030508">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Partidos - Padeluminatis</title>
+    <link rel="icon" type="image/x-icon" href="./imagenes/Logojafs.png">
+    <link rel="apple-touch-icon" href="./imagenes/Logojafs.png">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Rajdhani:wght@500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Rajdhani:wght@500;600;700;800&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="./css/design-system-v3.css">
     <link rel="stylesheet" href="./css/app.css">
     <link rel="stylesheet" href="./css/shared-utils.css">
     <link rel="stylesheet" href="./css/bottom-nav.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="./css/calendario-premium.css">
+    <link rel="stylesheet" href="./css/match-modal-v2.css">
+</head>
+<style>
+    .filters-panel {
+        transition: all 0.3s ease;
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(-10px);
+    }
 
-    <style>
-        :root {
-            --card-bg: rgba(20, 22, 28, 0.7);
-            --glow-primary: rgba(255, 107, 53, 0.4);
-            --glow-accent: rgba(0, 195, 255, 0.4);
-        }
+    .filters-panel.active {
+        max-height: 500px;
+        opacity: 1;
+        transform: translateY(0);
+        padding-bottom: 1rem;
+    }
 
-        .partidos-container {
-            padding: 1.5rem;
-            padding-bottom: 120px;
-        }
+    .filter-chip {
+        padding: 6px 14px;
+        border-radius: 20px;
+        background: var(--bg-surface-2);
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+    }
 
-        /* --- MATCH CARDS PRO --- */
-        .match-row-pro {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 16px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            transition: 0.3s;
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-        }
+    .filter-chip.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+        box-shadow: var(--shadow-primary);
+    }
 
-        .match-row-pro:hover {
-            border-color: rgba(255, 107, 53, 0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
-        }
+    .match-list-container {
+        padding-bottom: 80px;
+    }
 
-        .mrp-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.7rem;
-            font-weight: 800;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+    .compact-date-badge {
+        font-family: 'Rajdhani';
+        font-weight: 700;
+        text-align: center;
+        line-height: 1;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 6px;
+        border: 1px solid var(--border);
+    }
 
-        .mrp-type {
-            padding: 2px 8px;
-            border-radius: 6px;
-            background: rgba(255, 107, 53, 0.1);
-            color: var(--primary);
-        }
+    .cdb-month {
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        color: var(--primary);
+    }
 
-        .mrp-type.amistoso {
-            background: rgba(0, 195, 255, 0.1);
-            color: var(--accent);
-        }
-
-        .mrp-main {
-            display: grid;
-            grid-template-columns: 1fr 50px 1fr;
-            align-items: center;
-            text-align: center;
-        }
-
-        .mrp-team {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            align-items: center;
-        }
-
-        .mrp-avatar {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            background: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            font-family: 'Rajdhani';
-            font-weight: 800;
-            color: #fff;
-        }
-
-        .mrp-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .mrp-names {
-            font-size: 0.65rem;
-            font-weight: 700;
-            color: #fff;
-            max-width: 100px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .mrp-score-area {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-        }
-
-        .mrp-score {
-            font-family: 'Rajdhani';
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: #fff;
-            letter-spacing: 2px;
-        }
-
-        .mrp-badge-res {
-            font-size: 0.55rem;
-            font-weight: 800;
-            padding: 2px 6px;
-            border-radius: 4px;
-            background: #27ae60;
-            color: #fff;
-        }
-
-        .mrp-badge-res.lost {
-            background: #c0392b;
-        }
-
-        .mrp-badge-res.global {
-            background: rgba(255, 255, 255, 0.1);
-            opacity: 0.7;
-        }
-
-        .mrp-badge-res.pending {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        .mrp-footer {
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            padding-top: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .mrp-date {
-            font-size: 0.7rem;
-            font-weight: 600;
-            opacity: 0.4;
-        }
-
-        .mrp-detail-pts {
-            font-family: 'Rajdhani';
-            font-size: 0.85rem;
-            font-weight: 800;
-            color: var(--primary);
-        }
-
-        /* --- FILTERS & SEARCH --- */
-        .search-bar-neon {
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 25px;
-            transition: 0.3s;
-        }
-
-        .search-bar-neon:focus-within {
-            border-color: var(--primary);
-            box-shadow: 0 0 15px var(--glow-primary);
-        }
-
-        .search-bar-neon input {
-            background: transparent;
-            border: none;
-            color: #fff;
-            width: 100%;
-            outline: none;
-            font-family: 'Outfit';
-            font-weight: 500;
-        }
-
-        /* --- COMPARISON MODE --- */
-        .comparison-panel {
-            background: linear-gradient(135deg, rgba(255, 107, 53, 0.05), rgba(0, 195, 255, 0.05));
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 25px;
-            padding: 20px;
-            margin-bottom: 30px;
-            display: none;
-            animation: slideDown 0.4s ease-out;
-        }
-
-        .comparison-panel.active {
-            display: block;
-        }
-
-        @keyframes slideDown {
-            from {
-                transform: translateY(-20px);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .comp-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 15px;
-        }
-
-        .comp-selectors {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .comp-user-selector {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            padding: 10px;
-            border-radius: 12px;
-            font-family: 'Rajdhani';
-            font-weight: 700;
-            outline: none;
-            width: 100%;
-        }
-
-        .comp-user-selector option {
-            background: #1a1b22;
-            color: #fff;
-        }
-
-        /* Tabs custom */
-        .tabs-modern {
-            display: flex;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 30px;
-            padding: 4px;
-            margin-bottom: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 10px;
-            border-radius: 25px;
-            border: none;
-            background: transparent;
-            color: var(--text-muted);
-            font-family: 'Rajdhani';
-            font-weight: 700;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .tab-btn.active {
-            background: var(--primary);
-            color: #fff;
-            box-shadow: 0 4px 15px var(--glow-primary);
-        }
-
-        .chart-container-pro {
-            height: 200px;
-            margin-bottom: 25px;
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .filter-floating-btn {
-            position: fixed;
-            bottom: 100px;
-            right: 20px;
-            width: 56px;
-            height: 56px;
-            border-radius: 18px;
-            background: var(--primary);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 10px 25px var(--glow-primary);
-            z-index: 100;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .badge-pro {
-            background: var(--primary-glow);
-            color: var(--primary);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.55rem;
-            font-weight: 800;
-        }
-    </style>
+    .cdb-day {
+        font-size: 1.2rem;
+        color: white;
+    }
+</style>
 </head>
 
 <body class="app-body">
-    <div id="particles-js" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></div>
-
-    <header class="app-header">
+    <header class="app-header" style="height: 55px; padding: 0 15px;">
         <div class="header-left">
-            <h1 class="header-title">
-                <span class="title-main">PARTIDOS</span>
-                <span class="title-dot">.</span>
-            </h1>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <img src="./imagenes/Logojafs.png" alt="Logo"
+                    style="width: 30px; height: 30px; object-fit: cover; border-radius: 50%; filter: drop-shadow(0 0 5px rgba(255,107,53,0.5));">
+                <h1 class="header-title" style="font-size: 1.1rem;">
+                    <span class="title-main">PARTIDOS</span>
+                    <span class="title-dot">.</span>
+                </h1>
+            </div>
         </div>
-        <div class="header-right">
-            <a href="notificaciones.html" class="notification-bell">
-                <i class="fas fa-bell"></i>
-                <span class="notification-dot"></span>
+        <div class="header-right" style="gap: 5px;">
+            <button id="toggle-filters-btn" class="nav-icon-btn" title="Filtrar" style="font-size: 0.9rem;">
+                <i class="fas fa-filter"></i>
+            </button>
+            <a href="admin.html" id="admin-link" class="admin-access-btn" style="display: none; font-size: 0.9rem;">
+                <i class="fas fa-user-shield"></i>
             </a>
-            <div id="header-avatar-container"></div>
+            <a href="notificaciones.html" class="nav-icon-btn notification-bell">
+                <i class="fas fa-bell"></i>
+                <span class="notification-dot" id="header-notif-dot" style="display:none;"></span>
+            </a>
+            <a href="perfil.html" class="user-profile-trigger-link">
+                <div class="user-profile-trigger" style="width: 32px; height: 32px;">
+                    <div class="spinner-small" style="width: 15px; height: 15px; border-width: 2px;"></div>
+                </div>
+            </a>
         </div>
     </header>
 
-    <main class="container partidos-container animate-fade-in">
+    <main class="main-scroll-container">
+        <div class="container pb-bottom-nav">
 
-        <!-- Interactive Tabs -->
-        <div class="tabs-modern">
-            <button class="tab-btn active" data-view="history">HISTORIAL</button>
-            <button class="tab-btn" data-view="comparison">COMPARAR</button>
-            <button class="tab-btn" data-view="insights">ESTADÍSTICAS</button>
-        </div>
-
-        <!-- Comparison View -->
-        <div id="view-comparison" style="display:none;">
-            <div class="comparison-panel active">
-                <div class="comp-header">
-                    <span class="text-xs font-bold opacity-50 uppercase tracking-widest">Comparar dos jugadores</span>
-                </div>
-                <div class="comp-selectors">
-                    <select id="comp-select-1" class="comp-user-selector">
-                        <option value="">Jugador A...</option>
-                    </select>
-                    <select id="comp-select-2" class="comp-user-selector">
-                        <option value="">Jugador B...</option>
-                    </select>
-                </div>
-
-                <div id="comparison-results" style="display:none;">
-                    <div class="flex-between align-center px-2 py-4">
-                        <div class="text-center" style="width:35%">
-                            <div class="mrp-avatar mx-auto mb-2" id="comp-avatar-1"
-                                style="width:50px; height:50px; border-color:var(--primary)">?</div>
-                            <div class="text-xs font-bold" id="comp-name-1">---</div>
-                        </div>
-                        <div class="font-rajdhani font-bold text-2xl opacity-20">VS</div>
-                        <div class="text-center" style="width:35%">
-                            <div class="mrp-avatar mx-auto mb-2" id="comp-avatar-2"
-                                style="width:50px; height:50px; border-color:var(--accent)">?</div>
-                            <div class="text-xs font-bold" id="comp-name-2">---</div>
+            <!-- Filters Panel -->
+            <div id="filters-panel" class="filters-panel">
+                <div class="glass-strong p-3 rounded-xl border-glass">
+                    <div class="mb-3">
+                        <label class="label-xs text-muted mb-2 block">TIPO DE PARTIDO</label>
+                        <div class="flex gap-2 flex-wrap">
+                            <button class="filter-chip active" data-type="all">TODOS</button>
+                            <button class="filter-chip" data-type="amistoso">AMISTOSO</button>
+                            <button class="filter-chip" data-type="reto">RETO</button>
                         </div>
                     </div>
 
-                    <div class="glass-strong p-4 rounded-3xl mb-4 border-white/5">
-                        <div class="flex-between mb-2 text-xs font-bold opacity-40 uppercase tracking-widest">PUNTOS ELO
-                        </div>
-                        <div class="flex gap-2 h-2 rounded-full overflow-hidden mb-5 bg-white/5">
-                            <div id="comp-bar-1-pts"
-                                style="width:50%; background:var(--primary); box-shadow: 0 0 10px var(--primary)"></div>
-                            <div id="comp-bar-2-pts"
-                                style="width:50%; background:var(--accent); box-shadow: 0 0 10px var(--accent)"></div>
-                        </div>
-
-                        <div class="flex-between mb-2 text-xs font-bold opacity-40 uppercase tracking-widest">WIN RATE
-                        </div>
-                        <div class="flex gap-2 h-2 rounded-full overflow-hidden bg-white/5">
-                            <div id="comp-bar-1-wr" style="width:50%; background:var(--primary-dark)"></div>
-                            <div id="comp-bar-2-wr" style="width:50%; background:var(--accent-dark)"></div>
+                    <div class="mb-3">
+                        <label class="label-xs text-muted mb-2 block">ESTADO</label>
+                        <div class="flex gap-2 flex-wrap">
+                            <button class="filter-chip active" data-status="all">CUALQUIERA</button>
+                            <button class="filter-chip" data-status="jugado">JUGADO</button>
+                            <button class="filter-chip" data-status="pendiente">PENDIENTE</button>
                         </div>
                     </div>
 
-                    <div id="comp-head-to-head" class="text-xs text-center p-3 glass-strong rounded-2xl opacity-80"
-                        style="border: 1px dashed rgba(255,255,255,0.1)">
-                        Selecciona dos jugadores para ver su historial compartido
+                    <div class="mb-2">
+                        <label class="label-xs text-muted mb-2 block">BUSCAR JUGADOR</label>
+                        <div class="input-group-premium" style="margin:0">
+                            <input type="text" id="search-player" placeholder="Nombre de usuario..."
+                                class="form-input-pro" style="padding:10px;">
+                            <i class="fas fa-search text-muted" style="position:absolute; right:12px; top:12px;"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Insights / Statistics Dashboard -->
-        <div id="view-insights" style="display:none;">
-            <div class="chart-container-pro">
-                <canvas id="performanceChart"></canvas>
-            </div>
-
-            <div class="grid-2-col gap-3">
-                <div class="stat-card-pro p-3 glass-strong rounded-2xl text-center border-white/5">
-                    <div class="text-primary font-rajdhani text-2xl font-bold" id="stat-victories">0</div>
-                    <div class="text-2xs opacity-40 font-bold uppercase">Victorias</div>
-                </div>
-                <div class="stat-card-pro p-3 glass-strong rounded-2xl text-center border-white/5">
-                    <div class="text-accent font-rajdhani text-2xl font-bold" id="stat-wr">0%</div>
-                    <div class="text-2xs opacity-40 font-bold uppercase">Win Rate</div>
+            <!-- Matches List -->
+            <div id="matches-list" class="match-list-container">
+                <div class="loader-ring-container">
+                    <div class="spinner-small"></div>
                 </div>
             </div>
-        </div>
 
-        <!-- History View / Search -->
-        <div id="view-history">
-            <div class="search-bar-neon" id="search-container">
-                <i class="fas fa-search opacity-50"></i>
-                <input type="text" id="match-search" placeholder="Busca por pareja (Ej: Juan Pedro), rival o fecha...">
-            </div>
-
-            <div id="matches-list-container">
-                <div class="loader-ring-container py-5">
-                    <div class="loader-ring"></div>
-                </div>
-            </div>
         </div>
     </main>
 
-    <!-- Modal para Detalles del Partido -->
-    <div id="modal-container-shared" class="modal-overlay">
-        <div class="modal-card">
+    <!-- Shared Universal Modal -->
+    <div id="modal-partido-universal" class="modal-overlay">
+        <div class="modal-card glass-strong">
             <div class="modal-header">
-                <h3 class="modal-title">DETALLES PARTIDA</h3>
+                <h3 class="modal-title" id="modal-titulo">DETALLES</h3>
                 <button class="close-btn" onclick="closeMatchModal()">&times;</button>
             </div>
-            <div class="modal-body" id="modal-content-shared">
-                <!-- Data injected by match-service.js -->
+            <div id="modal-cuerpo" class="modal-body scroll-y">
+                <!-- Dynamic Content -->
             </div>
         </div>
     </div>
 
-    <nav class="bottom-nav glass">
-        <a href="home.html" class="nav-link"><i class="fas fa-home"></i><span>Inicio</span></a>
-        <a href="calendario.html" class="nav-link"><i class="fas fa-calendar-alt"></i><span>Reserva</span></a>
-        <a href="puntosRanking.html" class="nav-fab"><i class="fas fa-trophy"></i></a>
-        <a href="eventos.html" class="nav-link"><i class="fas fa-medal"></i><span>Eventos</span></a>
-        <a href="partidos.html" class="nav-link active"><i class="fas fa-clipboard-list"></i><span>Partidos</span></a>
+    <!-- Bottom Nav -->
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+        <a href="home.html" class="nav-link">
+            <i class="fas fa-home"></i>
+            <span>INICIO</span>
+        </a>
+        <a href="calendario.html" class="nav-link">
+            <i class="fas fa-calendar-alt"></i>
+            <span>PISTAS</span>
+        </a>
+        <a href="home.html" class="nav-fab">
+            <div class="fab-inner">
+                <img src="./imagenes/Logojafs.png" alt="O" style="width:24px; height:24px; border-radius:50%">
+            </div>
+        </a>
+        <a href="eventos.html" class="nav-link">
+            <i class="fas fa-bolt"></i>
+            <span>EVENTOS</span>
+        </a>
+        <a href="partidos.html" class="nav-link">
+            <i class="fas fa-table-tennis"></i>
+            <span>PARTIDOS</span>
+        </a>
     </nav>
 
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-    <script type="module" src="./js/particles-init.js"></script>
+    <script type="module" src="./js/partidos.js"></script>
     <script type="module">
-        import { auth, db } from './js/firebase-config.js';
-        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.7.3/firebase-auth.js';
-        import { collection, query, where, getDocs, getDoc, doc, limit } from 'https://www.gstatic.com/firebasejs/11.7.3/firebase-firestore.js';
-        import { initSharedUI, authGuard, renderAvatarShared } from './js/ui-core.js';
-
-        authGuard();
-        initSharedUI('Partidos');
-
-        let currentUser = null;
-        let allUsersMap = {};
-        let allMatches = [];
-        let filteredMatches = [];
-        let performanceChart = null;
-
-        window.renderMatchDetailsShared = async (id, type) => {
-            const { renderMatchDetailsShared, getDocument } = await import('./js/match-service.js');
-            const container = document.getElementById('modal-cuerpo');
-            const modal = document.getElementById('modal-partido-universal');
-            const title = document.getElementById('modal-titulo');
-
-            if (title) title.textContent = "DETALLES";
-            modal.classList.add('active');
-            container.innerHTML = '<div class="p-5 text-center"><div class="loader-ring"></div></div>';
-
-            const colName = type === 'reto' ? 'partidosReto' : 'partidosAmistosos';
-            const snap = await getDocs(query(collection(db, colName), limit(1))); // Simplified or pass doc directly
-            // Actually better to use getDoc
-            const docRef = doc(db, colName, id);
-            const snapDoc = await getDoc(docRef);
-            if (snapDoc.exists()) {
-                await renderMatchDetailsShared(container, { id, ...snapDoc.data() }, currentUser, allUsersMap[currentUser.uid]);
-            }
-        };
-
-        window.executeMatchAction = async (action, id, type, extra = null) => {
-            const { executeMatchActionShared } = await import('./js/match-service.js');
-            const success = await executeMatchActionShared(action, id, type, currentUser, allUsersMap[currentUser.uid], extra);
-            if (success) {
-                if (action === 'delete') document.getElementById('modal-partido-universal').classList.remove('active');
-                else {
-                    const colName = type.toLowerCase().includes('reto') ? 'partidosReto' : 'partidosAmistosos';
-                    const snap = await getDoc(doc(db, colName, id));
-                    if (snap.exists()) {
-                        const { renderMatchDetailsShared } = await import('./js/match-service.js');
-                        await renderMatchDetailsShared(document.getElementById('modal-cuerpo'), { id, ...snap.data() }, currentUser, allUsersMap[currentUser.uid]);
-                    } else {
-                        document.getElementById('modal-partido-universal').classList.remove('active');
-                    }
-                }
-                // Reload list
-                initAnalysis();
-            }
-        };
-
-        window.closeModal = () => {
-            document.getElementById('modal-partido-universal').classList.remove('active');
-            import('./js/match-service.js').then(ms => ms.closeChatSubscription());
-        };
-        document.getElementById('btn-cerrar-modal').onclick = closeModal;
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUser = user;
-                await initAnalysis();
-            } else {
-                window.location.href = 'index.html';
-            }
-        });
-
-        async function initAnalysis() {
-            try {
-                console.log(`📡 [Analysis] Starting load of all matches...`);
-
-                // 1. Load All Users (with error handling for permissions)
-                try {
-                    const usersSnap = await getDocs(collection(db, "usuarios"));
-                    usersSnap.forEach(d => {
-                        allUsersMap[d.id] = { ...d.data(), id: d.id };
-                    });
-                    console.log(`✅ [Analysis] Loaded ${Object.keys(allUsersMap).length} users for reference.`);
-                } catch (userErr) {
-                    console.warn("Could not load full user list (permissions?):", userErr);
-                }
-
-                populateComparisonSelects();
-
-                const cols = ['partidosAmistosos', 'partidosReto'];
-                let rawMatches = [];
-                for (const col of cols) {
-                    try {
-                        console.log(`📡 [Analysis] Fetching collection: ${col}`);
-                        const snap = await getDocs(collection(db, col));
-                        console.log(`✅ [Analysis] Collection ${col} returned ${snap.size} docs.`);
-                        snap.forEach(d => {
-                            const data = d.data();
-                            if (data.fecha) {
-                                rawMatches.push({ id: d.id, ...data, colType: col });
-                                console.log(`🔍 [Analysis] Match Found: ${d.id} | Date: ${data.fecha.toDate ? data.fecha.toDate() : data.fecha}`);
-                            }
-                        });
-                    } catch (colErr) {
-                        console.error(`Error loading ${col}:`, colErr);
-                    }
-                }
-
-                // Sort by date (desc)
-                allMatches = rawMatches.sort((a, b) => {
-                    const da = a.fecha?.toDate ? a.fecha.toDate() : new Date(a.fecha || 0);
-                    const db = b.fecha?.toDate ? b.fecha.toDate() : new Date(b.fecha || 0);
-                    return db - da;
-                });
-
-                console.log(`📦 [Analysis] Total matches ready to render: ${allMatches.length}`);
-
-                filteredMatches = [...allMatches];
-                renderMatchesList(filteredMatches);
-                updateMainInsights();
-
-            } catch (err) {
-                console.error("Analysis Init Error:", err);
-                document.getElementById('matches-list-container').innerHTML = '<p class="text-center p-5 opacity-40">Error cargando biblioteca de partidos.</p>';
-            }
-        }
-
-        function populateComparisonSelects() {
-            const sels = [document.getElementById('comp-select-1'), document.getElementById('comp-select-2')];
-            const users = Object.values(allUsersMap).sort((a, b) => (a.nombreUsuario || '').localeCompare(b.nombreUsuario || ''));
-
-            sels.forEach(sel => {
-                if (!sel) return;
-                users.forEach(u => {
-                    const opt = document.createElement('option');
-                    opt.value = u.id;
-                    opt.textContent = u.nombreUsuario || u.nombre || 'Sin nombre';
-                    sel.appendChild(opt);
-                });
-                sel.onchange = () => updateComparisonView();
-            });
-
-            // Default 1: Current User
-            if (currentUser) sels[0].value = currentUser.uid;
-        }
-
-        function renderMatchesList(matches) {
-            const container = document.getElementById('matches-list-container');
-            if (matches.length === 0) {
-                container.innerHTML = '<div class="text-center p-5 opacity-40">No se encontraron partidos guardados.</div>';
-                return;
-            }
-
-            container.innerHTML = matches.map(m => {
-                const date = m.fecha?.toDate ? m.fecha.toDate() : new Date();
-                const now = new Date();
-                const isPast = date < now;
-                const dateStr = date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' });
-                const timeStr = date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-
-                // Get Player Names
-                const pIds = m.jugadores || [];
-
-                const score = m.resultado?.sets || "";
-                const isReto = m.colType === 'partidosReto';
-                const isAnulada = m.estado === 'anulado';
-                const isIncompleta = isPast && m.estado !== 'jugado' && !isAnulada;
-
-                // Determine result badge
-                let resBadge = '<span class="mrp-badge-res global">GLOBAL</span>';
-                if (isAnulada) {
-                    resBadge = '<span class="mrp-badge-res lost" style="background:#666">ANULADA</span>';
-                } else if (isIncompleta) {
-                    resBadge = '<span class="mrp-badge-res warning" style="background:var(--primary); color:#000">INCOMPLETA</span>';
-                } else if (m.estado !== 'jugado') {
-                    resBadge = '<span class="mrp-badge-res pending">PENDIENTE</span>';
-                } else if (currentUser && pIds.includes(currentUser.uid)) {
-                    const myIdx = pIds.indexOf(currentUser.uid);
-                    const isT1 = myIdx < 2;
-                    const scores = score.split(' ')[0].split('-').map(Number);
-                    const win = (isT1 && scores[0] > scores[1]) || (!isT1 && scores[1] > scores[0]);
-                    resBadge = `<span class="mrp-badge-res ${win ? 'win' : 'lost'}">${win ? 'VICTORIA' : 'DERROTA'}</span>`;
-                }
-
-                // Avatars HTML
-                const av1 = renderAvatarShared(pIds[0], allUsersMap[pIds[0]], 'sm');
-                const av2 = renderAvatarShared(pIds[1], allUsersMap[pIds[1]], 'sm');
-                const av3 = renderAvatarShared(pIds[2], allUsersMap[pIds[2]], 'sm');
-                const av4 = renderAvatarShared(pIds[3], allUsersMap[pIds[3]], 'sm');
-
-                const name1 = pIds[0] ? (pIds[0].startsWith('GUEST_') ? pIds[0].replace('GUEST_', '') : allUsersMap[pIds[0]]?.nombreUsuario || '???') : '---';
-                const name2 = pIds[1] ? (pIds[1].startsWith('GUEST_') ? pIds[1].replace('GUEST_', '') : allUsersMap[pIds[1]]?.nombreUsuario || '???') : '---';
-                const name3 = pIds[2] ? (pIds[2].startsWith('GUEST_') ? pIds[2].replace('GUEST_', '') : allUsersMap[pIds[2]]?.nombreUsuario || '???') : '---';
-                const name4 = pIds[3] ? (pIds[3].startsWith('GUEST_') ? pIds[3].replace('GUEST_', '') : allUsersMap[pIds[3]]?.nombreUsuario || '???') : '---';
-
-                return `
-                    <div class="match-row-pro animate-up ${isAnulada ? 'anulada' : ''} ${isIncompleta ? 'incompleta' : ''}" 
-                         onclick="import('./js/match-service.js').then(ms => window.renderMatchDetailsShared('${m.id}', '${m.colType === 'partidosReto' ? 'reto' : 'amistoso'}'))"
-                         style="animation-delay:${m.id.charCodeAt(0) % 10 * 0.05}s">
-                        <div class="mrp-date">
-                            <span class="d-day">${dateStr.split(' ')[0]}</span>
-                            <span class="d-month">${dateStr.split(' ')[1]}</span>
-                            <div class="mrp-time">${timeStr}</div>
-                        </div>
-                        
-                        <div class="mrp-main">
-                            <div class="mrp-players">
-                                <div class="mrp-team">
-                                    <div class="mrp-avatar-group">
-                                        <div class="mrp-avatar-mini">${av1}</div>
-                                        <div class="mrp-avatar-mini">${av2}</div>
-                                    </div>
-                                    <div class="mrp-names">${name1} & ${name2}</div>
-                                </div>
-                                
-                                <div class="mrp-vs">VS</div>
-                                
-                                <div class="mrp-team">
-                                    <div class="mrp-avatar-group">
-                                        <div class="mrp-avatar-mini">${av3}</div>
-                                        <div class="mrp-avatar-mini">${av4}</div>
-                                    </div>
-                                    <div class="mrp-names">${name3} & ${name4}</div>
-                                </div>
-                            </div>
-                            
-                            <div class="mrp-footer">
-                                <div class="mrp-type-pill ${isReto ? 'reto' : 'amistoso'}">
-                                    <i class="fas ${isReto ? 'fa-bolt' : 'fa-users'}"></i> ${isReto ? 'RETO' : 'AMISTOSO'}
-                                </div>
-                                ${resBadge}
-                            </div>
-                        </div>
-                        
-                        <div class="mrp-result">
-                            <div class="res-num">${score || '--'}</div>
-                            <div class="res-label">SCORE</div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function updateComparisonView() {
-            const u1Id = document.getElementById('comp-select-1').value;
-            const u2Id = document.getElementById('comp-select-2').value;
-            const results = document.getElementById('comparison-results');
-
-            if (!u1Id || !u2Id) {
-                results.style.display = 'none';
-                return;
-            }
-            if (u1Id === u2Id) {
-                alert("Selecciona dos jugadores diferentes.");
-                return;
-            }
-
-            results.style.display = 'block';
-            const u1 = allUsersMap[u1Id];
-            const u2 = allUsersMap[u2Id];
-
-            document.getElementById('comp-name-1').textContent = u1.nombreUsuario || 'Jugador A';
-            document.getElementById('comp-name-2').textContent = u2.nombreUsuario || 'Jugador B';
-
-            // Avatars
-            const renderAvatar = (id, elId) => {
-                const u = allUsersMap[id];
-                const el = document.getElementById(elId);
-                if (u.fotoPerfil || u.fotoURL) el.innerHTML = `<img src="${u.fotoPerfil || u.fotoURL}">`;
-                else el.textContent = (u.nombreUsuario || 'U').substring(0, 1);
-            };
-            renderAvatar(u1Id, 'comp-avatar-1');
-            renderAvatar(u2Id, 'comp-avatar-2');
-
-            // Stats
-            const p1 = Math.round(u1.puntosRankingTotal || 0);
-            const p2 = Math.round(u2.puntosRankingTotal || 0);
-            document.getElementById('comp-bar-1-pts').style.width = (p1 / (p1 + p2) * 100 || 50) + '%';
-            document.getElementById('comp-bar-2-pts').style.width = (p2 / (p1 + p2) * 100 || 50) + '%';
-
-            const wr1 = (u1.victorias / (u1.partidosJugados || 1) * 100).toFixed(1);
-            const wr2 = (u2.victorias / (u2.partidosJugados || 1) * 100).toFixed(1);
-            document.getElementById('comp-bar-1-wr').style.width = (parseFloat(wr1) / (parseFloat(wr1) + parseFloat(wr2)) * 100 || 50) + '%';
-            document.getElementById('comp-bar-2-wr').style.width = (parseFloat(wr2) / (parseFloat(wr1) + parseFloat(wr2)) * 100 || 50) + '%';
-
-            // Head to Head calculation
-            const h2h = allMatches.filter(m => m.jugadores.includes(u1Id) && m.jugadores.includes(u2Id));
-            let v1 = 0, v2 = 0;
-            h2h.forEach(m => {
-                const p = m.jugadores;
-                const score = m.resultado?.sets?.split(' ')[0]?.split('-')?.map(Number) || [0, 0];
-                const u1Idx = p.indexOf(u1Id);
-                const u2Idx = p.indexOf(u2Id);
-                const u1T1 = u1Idx < 2;
-                const u2T1 = u2Idx < 2;
-
-                if (u1T1 !== u2T1) { // Enfrentados
-                    const winT1 = score[0] > score[1];
-                    if (winT1 && u1T1) v1++;
-                    else if (!winT1 && !u1T1) v1++;
-                    else if (winT1 && u2T1) v2++;
-                    else if (!winT1 && !u2T1) v2++;
-                }
-            });
-
-            document.getElementById('comp-head-to-head').innerHTML = `
-                <div class="font-bold mb-1">ENFRENTAMIENTOS DIRECTOS</div>
-                <div class="flex-center gap-4 text-sm">
-                    <span class="text-primary">${v1} VICTORIAS</span>
-                    <span class="opacity-30">VS</span>
-                    <span class="text-accent">${v2} VICTORIAS</span>
-                </div>
-            `;
-        }
-
-        function updateMainInsights() {
-            if (!currentUser) return;
-            const u = allUsersMap[currentUser.uid] || {};
-            document.getElementById('stat-victories').textContent = u.victorias || 0;
-            const wr = (u.victorias / (u.partidosJugados || 1) * 100).toFixed(1);
-            document.getElementById('stat-wr').textContent = wr + '%';
-
-            // Chart Logic - Last 10 ELO values from match history
-            // We assume puntosDetalle stores the snapshot.
-            const last10 = allMatches.filter(m => m.jugadores.includes(currentUser.uid)).slice(0, 10).reverse();
-            const eloData = last10.map(m => {
-                const detail = (m.puntosDetalle || {})[currentUser.uid];
-                return detail ? detail.puntosDespues : null;
-            }).filter(v => v !== null);
-
-            if (eloData.length > 0) renderPerformanceChart(eloData);
-        }
-
-        function renderPerformanceChart(data) {
-            const ctx = document.getElementById('performanceChart').getContext('2d');
-            if (performanceChart) performanceChart.destroy();
-
-            performanceChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: data.map((_, i) => i + 1),
-                    datasets: [{
-                        label: 'ELO',
-                        data: data,
-                        borderColor: '#FF6B35',
-                        borderWidth: 3,
-                        tension: 0.4,
-                        fill: true,
-                        backgroundColor: 'rgba(255, 107, 53, 0.1)',
-                        pointRadius: 4,
-                        pointBackgroundColor: '#fff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 9 } } },
-                        x: { display: false }
-                    },
-                    plugins: { legend: { display: false } }
-                }
-            });
-        }
-
-        // --- Event Handlers ---
-        document.getElementById('match-search').oninput = (e) => {
-            const val = e.target.value.toLowerCase();
-            filteredMatches = allMatches.filter(m => {
-                const names = (m.jugadores || []).map(id => {
-                    const u = allUsersMap[id];
-                    return (u ? u.nombreUsuario || u.nombre : id.replace('GUEST_', '')).toLowerCase();
-                });
-
-                // Pair check: if user types "Juan Alberto", check if BOTH are in match
-                const words = val.split(' ').filter(w => w.length > 1);
-                const matchNames = words.every(w => names.some(n => n.includes(w)));
-
-                const matchGeneral = names.some(n => n.includes(val));
-                const matchScore = (m.resultado?.sets || "").includes(val);
-
-                return matchNames || matchGeneral || matchScore;
-            });
-            renderMatchesList(filteredMatches);
-        };
-
-        const tabs = document.querySelectorAll('.tab-btn');
-        tabs.forEach(btn => {
-            btn.onclick = () => {
-                tabs.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-
-                const views = ['history', 'comparison', 'insights'];
-                views.forEach(v => document.getElementById('view-' + v).style.display = 'none');
-                document.getElementById('view-' + btn.dataset.view).style.display = 'block';
-            };
-        });
-
-        document.getElementById('toggle-search').onclick = () => {
-            const s = document.getElementById('search-container');
-            s.style.display = s.style.display === 'none' ? 'flex' : 'none';
-        };
-
+        import { initSharedUI } from './js/ui-core.js';
+        initSharedUI('Registro de Partidos');
     </script>
 </body>
 
